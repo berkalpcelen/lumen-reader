@@ -434,6 +434,37 @@
   .error-msg { font-size: 14px; color: var(--text2); line-height: 1.8; }
   .error-msg strong { color: var(--text); }
 
+  /* ── TOC STYLES ── */
+  .reader-body #toc, .reader-body .toc, .reader-body .mw-toc {
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 18px 22px; margin: 0 0 32px;
+    display: inline-block; min-width: 220px; max-width: 100%;
+  }
+  .reader-body #toc h2, .reader-body .toc h2,
+  .reader-body #toc .toctitle, .reader-body .toc .toctitle {
+    font-size: 12px !important; font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3) !important;
+    margin: 0 0 12px !important; padding: 0 !important;
+    background: none !important; border: none !important;
+    font-weight: 600;
+  }
+  .reader-body #toc ul, .reader-body .toc ul { margin: 0 !important; padding: 0 !important; list-style: none !important; }
+  .reader-body #toc ul ul, .reader-body .toc ul ul { padding-left: 16px !important; margin-top: 2px !important; }
+  .reader-body #toc li, .reader-body .toc li {
+    margin: 0 !important; padding: 3px 0 !important;
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    color: var(--text2); display: flex; align-items: baseline; gap: 0;
+  }
+  .reader-body #toc li::before, .reader-body .toc li::before { display: none !important; }
+  .reader-body #toc .toc-link, .reader-body .toc .toc-link {
+    color: var(--link) !important; border-bottom: none !important;
+    display: flex; align-items: baseline; gap: 0; width: 100%;
+    font-size: 13px;
+  }
+  .reader-body #toc .toc-link:hover, .reader-body .toc .toc-link:hover {
+    color: var(--link-hover) !important; background: none !important;
+  }
+
   /* ── RESIZE HANDLE ── */
   #resize-handle { width: 5px; background: var(--border); cursor: col-resize; flex-shrink: 0; transition: background 0.15s; }
   #resize-handle:hover, #resize-handle.dragging { background: var(--accent); }
@@ -1276,25 +1307,40 @@ function processNode(src, dest, baseUrl, target) {
     }
 
     if (tag === 'a') {
-      const href = resolveUrl(node.getAttribute('href') || '', baseUrl);
-      if (href && !href.startsWith('#') && !/^javascript/i.test(href)) {
+      const rawHref = node.getAttribute('href') || '';
+      const href = resolveUrl(rawHref, baseUrl);
+
+      // Detect TOC / anchor links — these scroll to a section in the reader
+      const isTocLink = rawHref.startsWith('#') ||
+        node.closest && node.closest('#toc, .toc, .mw-toc, #contents, .contents');
+      const anchorId = rawHref.startsWith('#') ? rawHref.slice(1) : null;
+
+      if (isTocLink && anchorId) {
+        // Scroll-to-section link
+        const a = document.createElement('span');
+        a.className = 'reader-link toc-link';
+        a.title = 'Jump to section';
+        a.addEventListener('click', () => scrollToSection(anchorId, target));
+        processNode(node, a, baseUrl, target);
+        dest.appendChild(a);
+        return;
+      }
+
+      if (href && !/^javascript/i.test(href)) {
         const a = document.createElement('span');
         a.className = 'reader-link';
         a.title = href;
         a.dataset.href = href;
         a.addEventListener('click', () => openInPanel(href));
         processNode(node, a, baseUrl, target);
-        // Ensure there's whitespace before the link if prev sibling ends with a word char
+        // Ensure whitespace before the link
         const prev = dest.lastChild;
         if (prev && prev.nodeType === Node.TEXT_NODE) {
-          if (/\S$/.test(prev.textContent)) {
-            prev.textContent += ' ';
-          }
+          if (/\S$/.test(prev.textContent)) prev.textContent += ' ';
         } else if (prev && prev.nodeType === Node.ELEMENT_NODE) {
           dest.appendChild(document.createTextNode(' '));
         }
         dest.appendChild(a);
-        // Add space after link too
         dest.appendChild(document.createTextNode(' '));
       } else {
         processNode(node, dest, baseUrl, target);
@@ -1316,11 +1362,36 @@ function processNode(src, dest, baseUrl, target) {
     if (tag === 'hr' || tag === 'br') { dest.appendChild(document.createElement(newTag)); return; }
 
     const el = document.createElement(newTag);
+
+    // Preserve id on headings for anchor navigation
+    if (['h1','h2','h3','h4','h5','h6'].includes(newTag)) {
+      const id = node.getAttribute('id');
+      if (id) el.id = id;
+      // Also check for mw-headline span inside
+      const headline = node.querySelector('.mw-headline');
+      if (headline && headline.id) el.id = headline.id;
+    }
+
     if (['th','td'].includes(tag)) {
       const align = node.getAttribute('align') || node.style.textAlign;
       if (align) el.style.textAlign = align;
       ['colspan','rowspan'].forEach(a => { const v = node.getAttribute(a); if (v) el.setAttribute(a, v); });
     }
+
+    // Fix TOC number/text — add space after tocnumber spans
+    if (tag === 'span' && node.classList && node.classList.contains('tocnumber')) {
+      processNode(node, el, baseUrl, target);
+      el.style.marginRight = '0.4em';
+      dest.appendChild(el);
+      return;
+    }
+
+    // Preserve id on spans (mw-headline anchors)
+    if (tag === 'span') {
+      const id = node.getAttribute('id');
+      if (id) el.id = id;
+    }
+
     processNode(node, el, baseUrl, target);
     if (el.textContent.trim() || ['hr','br','table','ul','ol'].includes(newTag)) dest.appendChild(el);
   });
@@ -1336,6 +1407,42 @@ function resolveUrl(href, base) {
 // ── SIDE PANEL ──
 let sideCurrentUrl = null;
 let sideParsed = null;
+
+function scrollToSection(anchorId, target) {
+  // Find heading with matching id or name in the rendered content
+  const container = target === 'side'
+    ? document.getElementById('side-content')
+    : document.getElementById('reader-view');
+  if (!container) return;
+
+  // Try id match first, then text content match (wiki uses span.mw-headline inside headings)
+  const decoded = decodeURIComponent(anchorId).replace(/_/g, ' ').toLowerCase();
+  let el = container.querySelector(`[id="${CSS.escape(anchorId)}"]`)
+        || container.querySelector(`[id="${CSS.escape(decoded)}"]`);
+
+  if (!el) {
+    // Search headings by text content
+    const headings = container.querySelectorAll('h1,h2,h3,h4,h5,h6');
+    for (const h of headings) {
+      if (h.textContent.trim().toLowerCase().replace(/_/g,' ') === decoded) {
+        el = h; break;
+      }
+      // Partial match for numbered headings like "1 History" → "History"
+      const textOnly = h.textContent.trim().toLowerCase().replace(/^[\d.\s]+/, '').trim();
+      if (textOnly === decoded || textOnly.replace(/_/g,' ') === decoded) {
+        el = h; break;
+      }
+    }
+  }
+
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Flash highlight
+    el.style.transition = 'background 0.3s';
+    el.style.background = 'rgba(124,111,224,0.15)';
+    setTimeout(() => { el.style.background = ''; }, 1200);
+  }
+}
 
 function openInPanel(url) {
   // Open link in real browser tab, then show paste overlay in side panel
