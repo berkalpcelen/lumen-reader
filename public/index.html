@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumen Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f11;
+    --bg2: #161619;
+    --bg3: #1e1e23;
+    --bg4: #26262d;
+    --border: #2e2e38;
+    --border2: #3a3a47;
+    --text: #d8d8e8;
+    --text2: #9494aa;
+    --text3: #5c5c72;
+    --accent: #7b6ee8;
+    --accent2: #9d92f0;
+    --accent-glow: rgba(123,110,232,0.15);
+    --link: #8fb8f7;
+    --link-hover: #b8d4ff;
+    --tab-h: 42px;
+    --bar-h: 52px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TAB BAR ── */
+  #tab-bar {
+    display: flex;
+    align-items: center;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    height: var(--tab-h);
+    padding: 0 8px;
+    gap: 4px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  #tabs-container {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 12px 0 14px;
+    height: 30px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text2);
+    font-size: 12px;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    max-width: 180px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .tab:hover { background: var(--bg3); color: var(--text); }
+  .tab.active { background: var(--bg4); border-color: var(--border2); color: var(--text); }
+  .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+  .tab-close {
+    display: flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 3px;
+    opacity: 0; transition: opacity 0.15s, background 0.15s;
+    flex-shrink: 0; cursor: pointer; font-size: 11px; color: var(--text3);
+  }
+  .tab:hover .tab-close, .tab.active .tab-close { opacity: 1; }
+  .tab-close:hover { background: var(--bg); color: var(--text); }
+
+  #new-tab-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    background: transparent; border: none; color: var(--text3);
+    font-size: 18px; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+  }
+  #new-tab-btn:hover { background: var(--bg3); color: var(--text); }
+
+  #overflow-btn {
+    display: none; align-items: center; justify-content: center;
+    padding: 0 8px; height: 28px; border-radius: 6px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text2); font-size: 11px; font-family: 'Outfit', sans-serif;
+    cursor: pointer; gap: 5px; white-space: nowrap; flex-shrink: 0;
+  }
+  #overflow-btn:hover { color: var(--text); }
+  #overflow-btn.visible { display: flex; }
+
+  #overflow-menu {
+    display: none; position: absolute;
+    top: calc(var(--tab-h) + 4px); right: 8px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 4px; z-index: 1000;
+    min-width: 220px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #overflow-menu.open { display: block; }
+  .overflow-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border-radius: 5px; cursor: pointer;
+    font-size: 12px; color: var(--text2); gap: 8px;
+  }
+  .overflow-item:hover { background: var(--bg4); color: var(--text); }
+  .overflow-item.active { color: var(--accent2); }
+  .overflow-close { opacity: 0.5; font-size: 11px; }
+  .overflow-item:hover .overflow-close { opacity: 1; }
+
+  /* ── ADDRESS BAR ── */
+  #address-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 14px; height: var(--bar-h);
+    background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #url-input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0 14px; height: 34px;
+    color: var(--text); font-size: 13px; font-family: 'JetBrains Mono', monospace;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  #url-input::placeholder { color: var(--text3); font-family: 'Outfit', sans-serif; }
+
+  .bar-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 0 14px; height: 34px; border-radius: 8px; border: none;
+    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  #go-btn { background: var(--accent); color: #fff; }
+  #go-btn:hover { background: var(--accent2); }
+  #go-btn:disabled { opacity: 0.5; cursor: default; }
+  .icon-btn {
+    background: var(--bg3); color: var(--text2);
+    border: 1px solid var(--border); width: 34px; padding: 0; font-size: 15px;
+  }
+  .icon-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ── WORKSPACE ── */
+  #workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
+  #main-content { flex: 1; overflow-y: auto; min-width: 0; }
+
+  /* ── READER ── */
+  .reader-wrap { max-width: 740px; margin: 0 auto; padding: 48px 40px 80px; }
+  .reader-meta { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .reader-domain {
+    font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+  }
+  .reader-title { font-family: 'Crimson Pro', serif; font-size: 36px; font-weight: 600; line-height: 1.2; color: var(--text); }
+
+  .reader-body { font-family: 'Crimson Pro', serif; font-size: 20px; line-height: 1.75; color: var(--text); }
+  .reader-body h1 { font-size: 32px; font-weight: 600; margin: 40px 0 16px; color: var(--text); line-height: 1.2; }
+  .reader-body h2 { font-size: 26px; font-weight: 600; margin: 32px 0 12px; color: var(--text); line-height: 1.3; }
+  .reader-body h3 { font-size: 22px; font-weight: 600; margin: 24px 0 10px; color: var(--text); }
+  .reader-body h4, .reader-body h5, .reader-body h6 { font-size: 19px; font-weight: 600; margin: 20px 0 8px; color: var(--text2); }
+  .reader-body p { margin: 0 0 18px; }
+  .reader-body ul, .reader-body ol { margin: 0 0 18px 24px; }
+  .reader-body li { margin-bottom: 6px; }
+  .reader-body strong, .reader-body b { font-weight: 600; color: #e8e8f8; }
+  .reader-body em, .reader-body i { font-style: italic; }
+  .reader-body blockquote {
+    border-left: 3px solid var(--accent); margin: 24px 0; padding: 12px 20px;
+    background: var(--bg3); border-radius: 0 6px 6px 0; color: var(--text2); font-style: italic;
+  }
+  .reader-body code {
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 2px 6px; border-radius: 4px; color: var(--accent2);
+  }
+  .reader-body pre {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 18px;
+  }
+  .reader-body pre code { background: none; border: none; padding: 0; }
+  .reader-body table { width: 100%; border-collapse: collapse; margin: 0 0 24px; font-size: 16px; }
+  .reader-body th {
+    background: var(--bg3); border: 1px solid var(--border); padding: 10px 14px;
+    text-align: left; font-family: 'Outfit', sans-serif; font-size: 13px;
+    font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .reader-body td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
+  .reader-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .reader-body hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  .reader-link {
+    color: var(--link); text-decoration: none;
+    border-bottom: 1px solid rgba(143,184,247,0.3);
+    transition: color 0.15s, border-color 0.15s; cursor: pointer;
+  }
+  .reader-link:hover { color: var(--link-hover); border-color: var(--link-hover); }
+
+  /* ── IMAGE PILL ── */
+  .img-block { margin: 12px 0; }
+  .img-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 12px; margin: 4px 0; font-family: 'Outfit', sans-serif;
+    font-size: 13px; color: var(--text2); cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .img-pill:hover { border-color: var(--border2); color: var(--text); }
+  .img-pill-icon { font-size: 14px; }
+  .img-pill-label { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .img-pill-arrow { font-size: 10px; opacity: 0.5; margin-left: 4px; transition: transform 0.2s; }
+  .img-pill.open .img-pill-arrow { transform: rotate(90deg); }
+  .img-expanded { display: none; margin: 8px 0 16px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--bg3); }
+  .img-expanded.show { display: block; }
+  .img-expanded img { max-width: 100%; display: block; opacity: 0.9; }
+  .img-caption { padding: 8px 12px; font-family: 'Outfit', sans-serif; font-size: 12px; color: var(--text3); font-style: italic; border-top: 1px solid var(--border); }
+
+  /* ── HOME SCREEN ── */
+  #home-screen { display: none; padding: 60px 40px; max-width: 800px; margin: 0 auto; }
+  #home-screen.visible { display: block; }
+  .home-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 48px; }
+  .home-logo-icon {
+    width: 44px; height: 44px; background: var(--accent); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .home-logo-text { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
+  .home-logo-sub { font-size: 13px; color: var(--text3); font-weight: 300; }
+  .home-section-title {
+    font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3);
+    margin-bottom: 12px; margin-top: 36px;
+  }
+  .home-section-title:first-of-type { margin-top: 0; }
+  .history-list { display: flex; flex-direction: column; gap: 3px; }
+  .history-item {
+    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+    border-radius: 8px; cursor: pointer; transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+  .history-item:hover { background: var(--bg3); border-color: var(--border); }
+  .history-favicon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .history-info { flex: 1; min-width: 0; }
+  .history-title { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-url { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .history-delete { opacity: 0; font-size: 12px; color: var(--text3); padding: 4px 6px; border-radius: 4px; transition: opacity 0.15s, background 0.15s; flex-shrink: 0; }
+  .history-item:hover .history-delete { opacity: 1; }
+  .history-delete:hover { background: var(--bg4); color: var(--text); }
+  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px; color: var(--text3); font-size: 14px; text-align: center; }
+  .empty-state-icon { font-size: 32px; opacity: 0.4; }
+
+  /* ── LOADING / ERROR ── */
+  #reader-view { display: none; }
+  #reader-view.visible { display: block; }
+  .loading-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 40px; gap: 16px; color: var(--text2); }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-url { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .error-wrap { max-width: 520px; margin: 60px auto; padding: 32px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; }
+  .error-icon { font-size: 36px; margin-bottom: 16px; text-align:center; }
+  .error-title { font-size: 18px; font-weight: 500; margin-bottom: 12px; text-align:center; }
+  .error-msg { font-size: 14px; color: var(--text2); line-height: 1.8; }
+  .error-msg strong { color: var(--text); }
+
+  /* ── RESIZE HANDLE ── */
+  #resize-handle { width: 5px; background: var(--border); cursor: col-resize; flex-shrink: 0; transition: background 0.15s; }
+  #resize-handle:hover, #resize-handle.dragging { background: var(--accent); }
+
+  /* ── SIDE PANEL ── */
+  #side-panel {
+    display: none; flex-direction: column;
+    background: var(--bg2); border-left: 1px solid var(--border);
+    width: 35%; min-width: 260px; max-width: 50%;
+    flex-shrink: 0; overflow: hidden;
+  }
+  #side-panel.open { display: flex; }
+  #side-bar {
+    display: flex; align-items: center; gap: 8px; padding: 0 10px;
+    height: var(--bar-h); border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  #side-url-input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 7px; padding: 0 10px; height: 30px; color: var(--text);
+    font-size: 12px; font-family: 'JetBrains Mono', monospace; outline: none; transition: border-color 0.2s;
+  }
+  #side-url-input:focus { border-color: var(--accent); }
+  #side-url-input::placeholder { font-family: 'Outfit', sans-serif; color: var(--text3); }
+  #side-go-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 7px;
+    padding: 0 10px; height: 30px; font-family: 'Outfit', sans-serif; font-size: 12px; cursor: pointer;
+  }
+  #side-go-btn:hover { background: var(--accent2); }
+  #side-promote-btn {
+    background: var(--bg3); color: var(--text2); border: 1px solid var(--border);
+    border-radius: 7px; padding: 0 10px; height: 30px; font-family: 'Outfit', sans-serif;
+    font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  #side-promote-btn:hover { color: var(--text); border-color: var(--border2); }
+  #side-close-btn {
+    background: transparent; color: var(--text3); border: none;
+    width: 28px; height: 28px; border-radius: 6px; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0;
+  }
+  #side-close-btn:hover { background: var(--bg3); color: var(--text); }
+  #side-content { flex: 1; overflow-y: auto; }
+  .side-reader-wrap { padding: 28px 24px 60px; }
+  .side-reader-wrap .reader-title { font-size: 24px; }
+  .side-reader-wrap .reader-body { font-size: 17px; }
+  .side-reader-wrap .reader-body h1 { font-size: 24px; }
+  .side-reader-wrap .reader-body h2 { font-size: 21px; }
+  .side-reader-wrap .reader-body h3 { font-size: 19px; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  #status-bar {
+    position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px;
+    padding: 6px 14px; font-size: 12px; color: var(--text2);
+    font-family: 'JetBrains Mono', monospace; opacity: 0; transition: opacity 0.3s;
+    pointer-events: none; z-index: 500; white-space: nowrap;
+    max-width: 400px; overflow: hidden; text-overflow: ellipsis;
+  }
+  #status-bar.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="tab-bar">
+  <div id="tabs-container"></div>
+  <button id="overflow-btn" onclick="toggleOverflow()"><span id="overflow-count"></span> more ▾</button>
+  <button id="new-tab-btn" title="New tab (Ctrl+T)" onclick="newTab()">+</button>
+  <div id="overflow-menu"></div>
+</div>
+
+<div id="address-bar">
+  <button class="bar-btn icon-btn" title="Home" onclick="goHome()">⌂</button>
+  <input id="url-input" type="text" placeholder="Enter a URL… e.g. https://wh40k.lexicanum.com/wiki/Emperor_of_Mankind" />
+  <button class="bar-btn" id="go-btn" onclick="navigateCurrent()">Read →</button>
+</div>
+
+<div id="workspace">
+  <div id="main-content">
+    <div id="home-screen">
+      <div class="home-logo">
+        <div class="home-logo-icon">📖</div>
+        <div>
+          <div class="home-logo-text">Lumen</div>
+          <div class="home-logo-sub">Distraction-free reading</div>
+        </div>
+      </div>
+      <div class="home-section-title">Recent</div>
+      <div class="history-list" id="history-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">🕯</div>
+          <div>No history yet. Paste a URL above to start reading.</div>
+        </div>
+      </div>
+    </div>
+    <div id="reader-view"></div>
+  </div>
+
+  <div id="resize-handle"></div>
+
+  <div id="side-panel">
+    <div id="side-bar">
+      <input id="side-url-input" type="text" placeholder="URL…" />
+      <button id="side-go-btn" onclick="navigateSide()">Go</button>
+      <button id="side-promote-btn" onclick="promoteSideToTab()">⬆ New Tab</button>
+      <button id="side-close-btn" onclick="closePanel()">✕</button>
+    </div>
+    <div id="side-content"></div>
+  </div>
+</div>
+
+<div id="status-bar"></div>
+
+<script>
+// ── CONFIG ──
+// When deployed to Vercel, PROXY_BASE is automatically the same origin.
+// When running locally (file://), it falls back to a public proxy.
+const IS_LOCAL = location.protocol === 'file:';
+const PROXY_BASE = IS_LOCAL ? null : '/api/fetch?url=';
+
+async function fetchPage(url) {
+  if (!IS_LOCAL) {
+    // Use our own Vercel proxy
+    const resp = await fetch(PROXY_BASE + encodeURIComponent(url));
+    if (!resp.ok) throw new Error('Server error ' + resp.status);
+    return await resp.text();
+  } else {
+    // Fallback: try public proxies (may fail on restricted networks)
+    const proxies = [
+      u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+      u => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    ];
+    let lastErr;
+    for (const fn of proxies) {
+      try {
+        const resp = await fetch(fn(url));
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const text = await resp.text();
+        try { const d = JSON.parse(text); if (d.contents) return d.contents; } catch(e) {}
+        if (text.trim().startsWith('<')) return text;
+        throw new Error('Bad response');
+      } catch(e) { lastErr = e; }
+    }
+    throw lastErr || new Error('All proxies failed');
+  }
+}
+
+// ── STATE ──
+let tabs = [];
+let activeTabId = null;
+let sideUrl = null;
+let statusTimer = null;
+
+window.addEventListener('load', () => {
+  if (IS_LOCAL) showLocalWarning();
+  loadState();
+  if (tabs.length === 0) newTab();
+  setupResize();
+  setupKeyboard();
+  updateOverflow();
+  window.addEventListener('resize', updateOverflow);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#overflow-btn') && !e.target.closest('#overflow-menu'))
+      document.getElementById('overflow-menu').classList.remove('open');
+  });
+});
+
+function showLocalWarning() {
+  // Only show if opened as file://
+  const bar = document.getElementById('status-bar');
+  bar.textContent = '⚠ Running locally — deploy to Vercel for best results';
+  bar.classList.add('show');
+  setTimeout(() => bar.classList.remove('show'), 6000);
+}
+
+// ── TABS ──
+function newTab(url = null, title = 'New Tab') {
+  const id = Date.now() + Math.random();
+  tabs.push({ id, url, title, content: null, scrollY: 0 });
+  setActiveTab(id);
+  if (url) loadUrl(url, id);
+  else showHome();
+  renderTabs();
+  saveState();
+  return id;
+}
+
+function setActiveTab(id) {
+  if (activeTabId) {
+    const prev = tabs.find(t => t.id === activeTabId);
+    if (prev) prev.scrollY = document.getElementById('main-content').scrollTop;
+  }
+  activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+  document.getElementById('url-input').value = tab.url || '';
+  renderTabs();
+  updateOverflow();
+  if (!tab.url) { showHome(); return; }
+  if (tab.content) {
+    renderContent(tab.content, tab.url, 'main');
+    setTimeout(() => { document.getElementById('main-content').scrollTop = tab.scrollY || 0; }, 0);
+  } else {
+    loadUrl(tab.url, id);
+  }
+}
+
+function closeTab(id, e) {
+  if (e) e.stopPropagation();
+  const idx = tabs.findIndex(t => t.id === id);
+  tabs.splice(idx, 1);
+  if (tabs.length === 0) newTab();
+  else if (activeTabId === id) setActiveTab(tabs[Math.min(idx, tabs.length - 1)].id);
+  renderTabs();
+  updateOverflow();
+  saveState();
+}
+
+function renderTabs() {
+  const container = document.getElementById('tabs-container');
+  container.innerHTML = '';
+  tabs.forEach(tab => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (tab.id === activeTabId ? ' active' : '');
+    el.innerHTML = `<span class="tab-title" title="${escHtml(tab.url || 'New Tab')}">${escHtml(tab.title)}</span><span class="tab-close">✕</span>`;
+    el.addEventListener('click', () => setActiveTab(tab.id));
+    el.querySelector('.tab-close').addEventListener('click', (e) => closeTab(tab.id, e));
+    container.appendChild(el);
+  });
+  updateOverflow();
+}
+
+function updateOverflow() {
+  const container = document.getElementById('tabs-container');
+  const btn = document.getElementById('overflow-btn');
+  const countEl = document.getElementById('overflow-count');
+  const menu = document.getElementById('overflow-menu');
+  requestAnimationFrame(() => {
+    const allTabs = container.querySelectorAll('.tab');
+    const containerW = container.clientWidth;
+    let usedW = 0, hidden = [];
+    allTabs.forEach(t => t.style.display = 'flex');
+    allTabs.forEach((t, i) => {
+      usedW += t.offsetWidth + 3;
+      if (usedW > containerW - 80) { t.style.display = 'none'; hidden.push(tabs[i]); }
+    });
+    if (hidden.length > 0) {
+      btn.classList.add('visible');
+      countEl.textContent = hidden.length;
+      menu.innerHTML = hidden.map(tab => `
+        <div class="overflow-item ${tab.id === activeTabId ? 'active' : ''}" onclick="setActiveTab(${tab.id}); toggleOverflow();">
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(tab.title)}</span>
+          <span class="overflow-close" onclick="event.stopPropagation();closeTab(${tab.id}, event)">✕</span>
+        </div>`).join('');
+    } else {
+      btn.classList.remove('visible');
+      menu.classList.remove('open');
+    }
+  });
+}
+
+function toggleOverflow() { document.getElementById('overflow-menu').classList.toggle('open'); }
+
+// ── NAVIGATION ──
+function navigateCurrent() {
+  let url = document.getElementById('url-input').value.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.url = url; tab.content = null; }
+  loadUrl(url, activeTabId);
+  saveState();
+}
+
+function goHome() {
+  document.getElementById('url-input').value = '';
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.url = null; tab.content = null; tab.title = 'New Tab'; }
+  showHome(); renderTabs(); saveState();
+}
+
+function showHome() {
+  document.getElementById('home-screen').classList.add('visible');
+  document.getElementById('reader-view').classList.remove('visible');
+  document.getElementById('reader-view').innerHTML = '';
+  renderHistory();
+}
+
+async function loadUrl(url, tabId, target = 'main') {
+  const loadingHtml = `<div class="loading-wrap"><div class="spinner"></div><div>Fetching…</div><div class="loading-url">${escHtml(url)}</div></div>`;
+  if (target === 'main') {
+    document.getElementById('home-screen').classList.remove('visible');
+    document.getElementById('reader-view').classList.add('visible');
+    document.getElementById('reader-view').innerHTML = loadingHtml;
+  } else {
+    document.getElementById('side-content').innerHTML = loadingHtml;
+  }
+
+  try {
+    const html = await fetchPage(url);
+    const parsed = parseArticle(html, url);
+
+    if (target === 'main') {
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab) { tab.content = parsed; tab.title = parsed.title || new URL(url).hostname; tab.url = url; }
+      if (tabId === activeTabId) renderContent(parsed, url, 'main');
+      renderTabs(); updateOverflow();
+      addHistory(url, parsed.title || new URL(url).hostname);
+      saveState();
+    } else {
+      sideUrl = url;
+      document.getElementById('side-url-input').value = url;
+      renderContent(parsed, url, 'side');
+    }
+  } catch (err) {
+    const errHtml = `
+      <div class="error-wrap">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">Could not load page</div>
+        <div class="error-msg">
+          <strong>Error:</strong> ${escHtml(err.message)}<br><br>
+          ${IS_LOCAL
+            ? `You're running this file locally. Your work network may block proxy services.<br><br><strong>Solution:</strong> Deploy to Vercel — the fetch will happen server-side and bypass network restrictions.`
+            : `The page may require a login or block automated access. Try a different URL.`
+          }
+        </div>
+      </div>`;
+    if (target === 'main') document.getElementById('reader-view').innerHTML = errHtml;
+    else document.getElementById('side-content').innerHTML = errHtml;
+  }
+}
+
+// ── PARSER ──
+function parseArticle(html, baseUrl) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  let base = doc.querySelector('base');
+  if (!base) { base = doc.createElement('base'); base.href = baseUrl; doc.head.appendChild(base); }
+  else base.href = baseUrl;
+
+  ['script','style','noscript','iframe','nav','footer','header',
+   '.navbar','.nav','.menu','.sidebar','.advertisement','.ad','.ads',
+   '.cookie','.popup','.modal','.overlay','.social','.share',
+   '.comment','.comments','#comments','#cookie','.noprint',
+   '.wikia-menu-button','.page-header__languages','.toc .toctogglespan',
+   '[aria-hidden="true"]'].forEach(sel => {
+    try { doc.querySelectorAll(sel).forEach(el => el.remove()); } catch(e) {}
+  });
+
+  const main = [
+    doc.querySelector('article'),
+    doc.querySelector('main'),
+    doc.querySelector('[role="main"]'),
+    doc.querySelector('.mw-parser-output'),
+    doc.querySelector('#mw-content-text'),
+    doc.querySelector('.article-content'),
+    doc.querySelector('.post-content'),
+    doc.querySelector('.entry-content'),
+    doc.querySelector('#content'),
+    doc.querySelector('.content'),
+    doc.body
+  ].find(Boolean);
+
+  const title = (doc.querySelector('h1.page-header__title, h1.firstHeading, h1') || {}).textContent?.trim()
+    || doc.title.split('|')[0].trim() || doc.title;
+
+  return { title, html: main.innerHTML, baseUrl };
+}
+
+// ── RENDERER ──
+function renderContent(parsed, url, target) {
+  const wrap = document.createElement('div');
+  wrap.className = (target === 'main') ? 'reader-wrap' : 'side-reader-wrap';
+  let domain = '';
+  try { domain = new URL(url).hostname; } catch(e) {}
+  wrap.innerHTML = `
+    <div class="reader-meta">
+      <div class="reader-domain">${escHtml(domain)}</div>
+      <div class="reader-title">${escHtml(parsed.title)}</div>
+    </div>
+    <div class="reader-body"></div>`;
+  const body = wrap.querySelector('.reader-body');
+  const tmp = new DOMParser().parseFromString(parsed.html, 'text/html');
+  processNode(tmp.body, body, parsed.baseUrl, target);
+  if (target === 'main') {
+    document.getElementById('reader-view').innerHTML = '';
+    document.getElementById('reader-view').appendChild(wrap);
+  } else {
+    document.getElementById('side-content').innerHTML = '';
+    document.getElementById('side-content').appendChild(wrap);
+  }
+}
+
+function processNode(src, dest, baseUrl, target) {
+  src.childNodes.forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.textContent.trim()) dest.appendChild(document.createTextNode(node.textContent));
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = node.tagName.toLowerCase();
+    if (['script','style','noscript','iframe','button','form','input','select','textarea','nav','aside'].includes(tag)) return;
+
+    if (tag === 'img') {
+      const s = resolveUrl(node.getAttribute('src') || node.getAttribute('data-src') || '', baseUrl);
+      const alt = node.getAttribute('alt') || '';
+      if (!s || s.startsWith('data:')) return;
+      const pid = 'img_' + Math.random().toString(36).slice(2);
+      const block = document.createElement('div');
+      block.className = 'img-block';
+      block.innerHTML = `
+        <span class="img-pill" id="pill_${pid}" onclick="toggleImg('${pid}')">
+          <span class="img-pill-icon">📷</span>
+          <span class="img-pill-label">${escHtml(alt || s.split('/').pop() || 'Image')}</span>
+          <span class="img-pill-arrow">▶</span>
+        </span>
+        <div class="img-expanded" id="exp_${pid}">
+          <img src="${escHtml(s)}" alt="${escHtml(alt)}" loading="lazy" onerror="this.parentElement.style.display='none'">
+          ${alt ? `<div class="img-caption">${escHtml(alt)}</div>` : ''}
+        </div>`;
+      dest.appendChild(block);
+      return;
+    }
+
+    if (tag === 'a') {
+      const href = resolveUrl(node.getAttribute('href') || '', baseUrl);
+      if (href && !href.startsWith('#') && !/^javascript/i.test(href)) {
+        const a = document.createElement('span');
+        a.className = 'reader-link';
+        a.title = href;
+        a.dataset.href = href;
+        a.addEventListener('click', () => openInPanel(href));
+        processNode(node, a, baseUrl, target);
+        dest.appendChild(a);
+      } else {
+        processNode(node, dest, baseUrl, target);
+      }
+      return;
+    }
+
+    const blockMap = {
+      h1:'h1',h2:'h2',h3:'h3',h4:'h4',h5:'h5',h6:'h6',
+      p:'p',ul:'ul',ol:'ol',li:'li',blockquote:'blockquote',
+      pre:'pre',code:'code',strong:'strong',b:'strong',em:'em',i:'em',
+      hr:'hr',br:'br',table:'table',thead:'thead',tbody:'tbody',
+      tr:'tr',th:'th',td:'td',figure:'div',figcaption:'div',
+      section:'div',article:'div',div:'div',span:'span',
+      sup:'sup',sub:'sub',dl:'dl',dt:'dt',dd:'dd'
+    };
+    const newTag = blockMap[tag];
+    if (!newTag) { processNode(node, dest, baseUrl, target); return; }
+    if (tag === 'hr' || tag === 'br') { dest.appendChild(document.createElement(newTag)); return; }
+
+    const el = document.createElement(newTag);
+    if (['th','td'].includes(tag)) {
+      const align = node.getAttribute('align') || node.style.textAlign;
+      if (align) el.style.textAlign = align;
+      ['colspan','rowspan'].forEach(a => { const v = node.getAttribute(a); if (v) el.setAttribute(a, v); });
+    }
+    processNode(node, el, baseUrl, target);
+    if (el.textContent.trim() || ['hr','br','table','ul','ol'].includes(newTag)) dest.appendChild(el);
+  });
+}
+
+function resolveUrl(href, base) {
+  if (!href) return '';
+  if (/^https?:\/\//i.test(href)) return href;
+  if (href.startsWith('//')) return 'https:' + href;
+  try { return new URL(href, base).href; } catch(e) { return href; }
+}
+
+// ── SIDE PANEL ──
+function openInPanel(url) {
+  document.getElementById('side-panel').classList.add('open');
+  loadUrl(url, null, 'side');
+  showStatus('Opening in side panel…');
+}
+function closePanel() { document.getElementById('side-panel').classList.remove('open'); sideUrl = null; }
+function navigateSide() {
+  let url = document.getElementById('side-url-input').value.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  loadUrl(url, null, 'side');
+}
+function promoteSideToTab() {
+  const url = sideUrl || document.getElementById('side-url-input').value.trim();
+  if (!url) return;
+  newTab(url);
+  showStatus('Opened as new tab');
+}
+
+// ── RESIZE ──
+function setupResize() {
+  const handle = document.getElementById('resize-handle');
+  const panel = document.getElementById('side-panel');
+  const workspace = document.getElementById('workspace');
+  let dragging = false, startX = 0, startW = 0;
+  handle.addEventListener('mousedown', e => {
+    dragging = true; startX = e.clientX; startW = panel.offsetWidth;
+    handle.classList.add('dragging');
+    document.body.style.userSelect = 'none'; document.body.style.cursor = 'col-resize';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    let newW = startW + (startX - e.clientX);
+    newW = Math.max(260, Math.min(workspace.offsetWidth * 0.5, newW));
+    panel.style.width = newW + 'px'; panel.style.maxWidth = 'none';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false; handle.classList.remove('dragging');
+    document.body.style.userSelect = ''; document.body.style.cursor = '';
+  });
+}
+
+// ── HISTORY ──
+function addHistory(url, title) {
+  let h = getHistory().filter(x => x.url !== url);
+  h.unshift({ url, title, ts: Date.now() });
+  localStorage.setItem('lumen_history', JSON.stringify(h.slice(0, 50)));
+  renderHistory();
+}
+function getHistory() { try { return JSON.parse(localStorage.getItem('lumen_history') || '[]'); } catch(e) { return []; } }
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const h = getHistory();
+  if (!h.length) { list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🕯</div><div>No history yet. Paste a URL above to start reading.</div></div>`; return; }
+  list.innerHTML = h.slice(0,20).map(x => `
+    <div class="history-item" onclick="loadFromHistory('${escHtml(x.url)}')">
+      <div class="history-favicon">📄</div>
+      <div class="history-info">
+        <div class="history-title">${escHtml(x.title)}</div>
+        <div class="history-url">${escHtml(x.url)}</div>
+      </div>
+      <span class="history-delete" onclick="event.stopPropagation();deleteHistory('${escHtml(x.url)}')">✕</span>
+    </div>`).join('');
+}
+function loadFromHistory(url) {
+  document.getElementById('url-input').value = url;
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab) { tab.url = url; tab.content = null; }
+  loadUrl(url, activeTabId); saveState();
+}
+function deleteHistory(url) {
+  localStorage.setItem('lumen_history', JSON.stringify(getHistory().filter(x => x.url !== url)));
+  renderHistory();
+}
+
+// ── PERSISTENCE ──
+function saveState() {
+  localStorage.setItem('lumen_tabs', JSON.stringify(tabs.map(t => ({ id: t.id, url: t.url, title: t.title, scrollY: t.scrollY }))));
+  localStorage.setItem('lumen_active', activeTabId);
+}
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('lumen_tabs') || '[]');
+    const savedActive = localStorage.getItem('lumen_active');
+    if (saved.length) {
+      tabs = saved.map(t => ({ ...t, content: null }));
+      const activeId = tabs.find(t => String(t.id) === String(savedActive))?.id || tabs[0].id;
+      renderTabs(); setActiveTab(activeId);
+    }
+  } catch(e) { tabs = []; }
+}
+
+// ── KEYBOARD ──
+function setupKeyboard() {
+  document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') navigateCurrent(); });
+  document.getElementById('side-url-input').addEventListener('keydown', e => { if (e.key === 'Enter') navigateSide(); });
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key==='t') { e.preventDefault(); newTab(); }
+    if ((e.ctrlKey||e.metaKey) && e.key==='w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId, null); }
+    if ((e.ctrlKey||e.metaKey) && e.key==='l') { e.preventDefault(); document.getElementById('url-input').focus(); document.getElementById('url-input').select(); }
+  });
+}
+
+// ── HELPERS ──
+function toggleImg(id) {
+  const pill = document.getElementById('pill_' + id);
+  const exp = document.getElementById('exp_' + id);
+  exp.classList.toggle('show') ? pill.classList.add('open') : pill.classList.remove('open');
+}
+function showStatus(msg) {
+  const bar = document.getElementById('status-bar');
+  bar.textContent = msg; bar.classList.add('show');
+  clearTimeout(statusTimer); statusTimer = setTimeout(() => bar.classList.remove('show'), 2500);
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
