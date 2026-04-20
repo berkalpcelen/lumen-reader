@@ -156,7 +156,7 @@
 
   /* ── WORKSPACE ── */
   #workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
-  #main-content { flex: 1; overflow-y: auto; min-width: 0; }
+  #main-content { flex: 1; overflow-y: auto; min-width: 0; position: relative; }
 
   /* ── READER ── */
   .reader-wrap { max-width: 740px; margin: 0 auto; padding: 48px 40px 80px; }
@@ -365,9 +365,49 @@
   .paste-cancel {
     background: var(--bg3); color: var(--text2); border: 1px solid var(--border);
     border-radius: 8px; padding: 0 16px; height: 36px; font-family: 'Outfit', sans-serif;
-    font-size: 13px; cursor: pointer; transition: all 0.15s;
+    font-size: 13px; cursor: pointer; transition: all 0.15s; width: 100%;
   }
   .paste-cancel:hover { color: var(--text); }
+
+  /* ── PASTE ZONE ── */
+  .paste-zone {
+    width: 100%; background: var(--bg3); border: 2px dashed var(--border2);
+    border-radius: 10px; padding: 28px 20px; text-align: center;
+    cursor: pointer; transition: all 0.2s; outline: none;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .paste-zone:hover, .paste-zone:focus { border-color: var(--accent); background: var(--bg4); }
+  .paste-zone.active { border-color: var(--success, #5ecfa0); background: rgba(94,207,160,0.05); }
+  .paste-zone-icon { font-size: 28px; opacity: 0.6; }
+  .paste-zone-label { font-size: 14px; color: var(--text); font-family: 'Outfit', sans-serif; }
+  .paste-zone-label kbd {
+    background: var(--bg); border: 1px solid var(--border2); border-radius: 4px;
+    padding: 1px 7px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent2);
+  }
+  .paste-zone-sub { font-size: 12px; color: var(--text3); font-family: 'Outfit', sans-serif; }
+  .paste-zone.ready { border-color: #5ecfa0; }
+  .paste-zone.ready .paste-zone-icon::after { content: ' ✓'; font-size: 20px; color: #5ecfa0; }
+
+  /* ── MAIN PASTE OVERLAY ── */
+  #main-paste-overlay {
+    display: none; position: absolute; inset: 0;
+    background: rgba(15,15,17,0.95); z-index: 100;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px; gap: 18px; backdrop-filter: blur(4px);
+  }
+  #main-paste-overlay.show { display: flex; }
+  #main-paste-overlay .paste-title { font-size: 18px; }
+  #main-paste-overlay .paste-steps { max-width: 520px; }
+  #main-paste-overlay .paste-url-hint { max-width: 520px; }
+  #main-paste-overlay #main-paste-textarea {
+    width: 100%; max-width: 520px; height: 140px;
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    padding: 10px 12px; outline: none; resize: none; transition: border-color 0.2s;
+  }
+  #main-paste-overlay #main-paste-textarea:focus { border-color: var(--accent); }
+  #main-paste-overlay #main-paste-textarea::placeholder { font-family: 'Outfit', sans-serif; color: var(--text3); }
+  #main-paste-overlay .paste-actions { max-width: 520px; width: 100%; }
   .side-reader-wrap .reader-body h1 { font-size: 24px; }
   .side-reader-wrap .reader-body h2 { font-size: 21px; }
   .side-reader-wrap .reader-body h3 { font-size: 19px; }
@@ -400,11 +440,29 @@
 <div id="address-bar">
   <button class="bar-btn icon-btn" title="Home" onclick="goHome()">⌂</button>
   <input id="url-input" type="text" placeholder="Enter a URL… e.g. https://wh40k.lexicanum.com/wiki/Emperor_of_Mankind" />
-  <button class="bar-btn" id="go-btn" onclick="navigateCurrent()">Read →</button>
+  <button class="bar-btn" id="go-btn" onclick="navigateCurrent()">Open &amp; Read →</button>
+  <button class="bar-btn icon-btn" id="paste-main-btn" title="Paste HTML into reader" onclick="showMainPasteOverlay()" style="font-size:17px;">⌨</button>
 </div>
 
 <div id="workspace">
   <div id="main-content">
+    <div id="main-paste-overlay">
+      <div class="paste-title">Paste page content into Lumen</div>
+      <div class="paste-steps">
+        In the browser tab that just opened:<br>
+        Press <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
+        Then click the box below and press <kbd>Ctrl+V</kbd>
+      </div>
+      <div class="paste-url-hint" id="main-paste-url-hint"></div>
+      <div id="main-paste-zone" class="paste-zone" tabindex="0">
+        <div class="paste-zone-icon">⌨</div>
+        <div class="paste-zone-label">Click here, then press <kbd>Ctrl+V</kbd></div>
+        <div class="paste-zone-sub">Works with normal Ctrl+A → Ctrl+C from any page</div>
+      </div>
+      <div class="paste-actions">
+        <button class="paste-cancel" onclick="hideMainPasteOverlay()">Cancel</button>
+      </div>
+    </div>
     <div id="home-screen">
       <div class="home-logo">
         <div class="home-logo-icon">📖</div>
@@ -413,7 +471,24 @@
           <div class="home-logo-sub">Distraction-free reading</div>
         </div>
       </div>
-      <div class="home-section-title">Recent</div>
+      <div class="home-section-title">Bookmarklet — click any page, send to Lumen instantly</div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:8px;">
+        <div style="font-size:13px;color:var(--text2);line-height:1.9;margin-bottom:14px;">
+          Drag the button below to your browser's bookmarks bar. Then on any page — click it and the content appears in Lumen automatically, perfectly formatted.
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <a id="bookmarklet-link" href="#" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;padding:8px 18px;border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;text-decoration:none;cursor:grab;border:2px dashed transparent;transition:border-color 0.2s;" draggable="true"
+            ondragstart="this.style.borderColor='var(--accent2)'"
+            ondragend="this.style.borderColor='transparent'">
+            📖 Lumen
+          </a>
+          <span style="font-size:13px;color:var(--text3);">← Drag this to your bookmarks bar</span>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:12px;">
+          Don't see your bookmarks bar? Press <kbd style="background:var(--bg4);border:1px solid var(--border2);border-radius:3px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;">Ctrl+Shift+B</kbd> to show it.
+        </div>
+      </div>
+      <div class="home-section-title" style="margin-top:28px;">Recent</div>
       <div class="history-list" id="history-list">
         <div class="empty-state">
           <div class="empty-state-icon">🕯</div>
@@ -437,10 +512,9 @@
       <div id="paste-overlay">
         <div class="paste-title">Paste page content into the side panel</div>
         <div class="paste-steps">
-          1. The link opened in a new browser tab<br>
-          2. In that tab, press <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
-          3. Click the box below and press <kbd>Ctrl+V</kbd><br>
-          4. Hit <strong>Render</strong>
+          In the browser tab that just opened:<br>
+          Press <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
+          Then click the box below and press <kbd>Ctrl+V</kbd>
         </div>
         <div class="paste-url-hint" id="paste-url-hint"></div>
         <textarea id="paste-textarea" placeholder="Paste copied page content here…"></textarea>
@@ -505,6 +579,16 @@ let statusTimer = null;
 
 window.addEventListener('load', () => {
   if (IS_LOCAL) showLocalWarning();
+  initBookmarklet();
+  initPasteZones();
+  // Listen for messages from the bookmarklet
+  window.addEventListener('message', e => {
+    if (e.data && e.data.type === 'LUMEN_HTML') {
+      receiveBookmarkletContent(e.data.html, e.data.url, e.data.target || 'main');
+    }
+  });
+  // Check if opened by bookmarklet via URL param
+  checkBookmarkletReceive();
   loadState();
   if (tabs.length === 0) newTab();
   setupResize();
@@ -530,8 +614,20 @@ function newTab(url = null, title = 'New Tab') {
   const id = Date.now() + Math.random();
   tabs.push({ id, url, title, content: null, scrollY: 0 });
   setActiveTab(id);
-  if (url) loadUrl(url, id);
-  else showHome();
+  if (url) {
+    // If promoted from side panel with content, setActiveTab handles rendering
+    // Otherwise open in browser and show paste overlay
+    const tab = tabs.find(t => t.id === id);
+    if (!tab || !tab.content) {
+      window.open(url, '_blank');
+      document.getElementById('url-input').value = url;
+      document.getElementById('main-paste-url-hint').textContent = url;
+      document.getElementById('main-paste-textarea').value = '';
+      showMainPasteOverlay();
+    }
+  } else {
+    showHome();
+  }
   renderTabs();
   saveState();
   return id;
@@ -618,10 +714,78 @@ function navigateCurrent() {
   let url = document.getElementById('url-input').value.trim();
   if (!url) return;
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  // Open in real browser tab, then show paste overlay
+  window.open(url, '_blank');
+  document.getElementById('main-paste-url-hint').textContent = url;
+  document.getElementById('main-paste-textarea').value = '';
+  showMainPasteOverlay();
+  // Store url on the active tab
   const tab = tabs.find(t => t.id === activeTabId);
-  if (tab) { tab.url = url; tab.content = null; }
-  loadUrl(url, activeTabId);
+  if (tab) { tab.url = url; tab.pendingUrl = url; }
   saveState();
+}
+
+function showMainPasteOverlay() {
+  document.getElementById('home-screen').classList.remove('visible');
+  document.getElementById('reader-view').classList.remove('visible');
+  document.getElementById('main-paste-overlay').classList.add('show');
+  setTimeout(() => {
+    const z = document.getElementById('main-paste-zone');
+    if (z) z.focus();
+  }, 150);
+}
+
+function hideMainPasteOverlay() {
+  document.getElementById('main-paste-overlay').classList.remove('show');
+  // If there's existing content show it, else show home
+  const tab = tabs.find(t => t.id === activeTabId);
+  if (tab && tab.content) {
+    document.getElementById('reader-view').classList.add('visible');
+  } else {
+    showHome();
+  }
+}
+
+function renderMainPasted() {} // kept for compat
+
+function handlePastedHtml(html, url, target) {
+  if (!html || !html.trim()) { showStatus('Nothing pasted — try again'); return; }
+  const parsed = parseArticle(html, url || location.href);
+
+  if (target === 'side') {
+    sideCurrentUrl = url;
+    sideParsed = parsed;
+    document.getElementById('side-panel').classList.add('open');
+    document.getElementById('side-title').textContent = parsed.title || url;
+    hidePasteOverlay();
+    renderContent(parsed, url, 'side');
+    const overlay = document.getElementById('paste-overlay');
+    if (overlay) document.getElementById('side-content').appendChild(overlay);
+    showStatus('✓ Loaded in side panel');
+  } else {
+    const tab = tabs.find(t => t.id === activeTabId);
+    const finalUrl = url || (tab && tab.url) || location.href;
+    if (tab) {
+      tab.content = parsed;
+      tab.title = parsed.title || extractTitleFromUrl(finalUrl);
+      tab.url = finalUrl;
+      renderTabs(); updateOverflow();
+      addHistory(finalUrl, tab.title);
+      saveState();
+    }
+    hideMainPasteOverlay();
+    document.getElementById('reader-view').classList.add('visible');
+    renderContent(parsed, finalUrl, 'main');
+    showStatus('✓ Page rendered');
+  }
+}
+
+function extractTitleFromUrl(url) {
+  try {
+    const u = new URL(url);
+    const last = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
+    return decodeURIComponent(last).replace(/[_-]/g, ' ');
+  } catch(e) { return url; }
 }
 
 function goHome() {
@@ -846,9 +1010,11 @@ function openInPanel(url) {
 
 function showPasteOverlay() {
   document.getElementById('paste-url-hint').textContent = sideCurrentUrl || 'Paste any page content';
-  document.getElementById('paste-textarea').value = '';
   document.getElementById('paste-overlay').classList.add('show');
-  setTimeout(() => document.getElementById('paste-textarea').focus(), 100);
+  setTimeout(() => {
+    const z = document.getElementById('side-paste-zone');
+    if (z) z.focus();
+  }, 150);
 }
 
 function hidePasteOverlay() {
@@ -951,7 +1117,11 @@ function loadFromHistory(url) {
   document.getElementById('url-input').value = url;
   const tab = tabs.find(t => t.id === activeTabId);
   if (tab) { tab.url = url; tab.content = null; }
-  loadUrl(url, activeTabId); saveState();
+  window.open(url, '_blank');
+  document.getElementById('main-paste-url-hint').textContent = url;
+  document.getElementById('main-paste-textarea').value = '';
+  showMainPasteOverlay();
+  saveState();
 }
 function deleteHistory(url) {
   localStorage.setItem('lumen_history', JSON.stringify(getHistory().filter(x => x.url !== url)));
@@ -978,11 +1148,140 @@ function loadState() {
 // ── KEYBOARD ──
 function setupKeyboard() {
   document.getElementById('url-input').addEventListener('keydown', e => { if (e.key === 'Enter') navigateCurrent(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') hidePasteOverlay(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { hidePasteOverlay(); hideMainPasteOverlay(); }
+    if (e.key === 'Enter' && document.activeElement === document.getElementById('main-paste-textarea') && (e.ctrlKey || e.metaKey)) renderMainPasted();
+  });
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey||e.metaKey) && e.key==='t') { e.preventDefault(); newTab(); }
     if ((e.ctrlKey||e.metaKey) && e.key==='w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId, null); }
     if ((e.ctrlKey||e.metaKey) && e.key==='l') { e.preventDefault(); document.getElementById('url-input').focus(); document.getElementById('url-input').select(); }
+  });
+}
+
+// ── BOOKMARKLET ──
+function initBookmarklet() {
+  const lumenUrl = location.href.split('?')[0].split('#')[0];
+  // The bookmarklet grabs the page HTML and posts it to the Lumen window
+  // It opens Lumen (or focuses existing tab) then sends a message
+  const bookmarkletCode = `(function(){
+    var html=document.documentElement.outerHTML;
+    var url=location.href;
+    var target=window._lumenTarget||'main';
+    // Try to find existing Lumen tab
+    var lumenUrl='${lumenUrl}';
+    var w=window.open(lumenUrl,'lumen_reader');
+    var tries=0;
+    var send=function(){
+      try{
+        w.postMessage({type:'LUMEN_HTML',html:html,url:url,target:target},'*');
+      }catch(e){}
+    };
+    // Wait for Lumen to load then send
+    var interval=setInterval(function(){
+      send();
+      if(++tries>20)clearInterval(interval);
+    },300);
+    // Also send immediately in case already open
+    send();
+  })();`;
+
+  const el = document.getElementById('bookmarklet-link');
+  if (el) {
+    el.href = 'javascript:' + encodeURIComponent(bookmarkletCode).replace(/%20/g, ' ');
+    el.setAttribute('href', 'javascript:' + bookmarkletCode);
+  }
+}
+
+function receiveBookmarkletContent(html, url, target) {
+  if (!html) return;
+  const parsed = parseArticle(html, url);
+
+  if (target === 'side') {
+    sideCurrentUrl = url;
+    sideParsed = parsed;
+    document.getElementById('side-panel').classList.add('open');
+    document.getElementById('side-title').textContent = parsed.title || url;
+    renderContent(parsed, url, 'side');
+    const overlay = document.getElementById('paste-overlay');
+    if (overlay) document.getElementById('side-content').appendChild(overlay);
+    showStatus('Loaded in side panel: ' + (parsed.title || url));
+  } else {
+    const tab = tabs.find(t => t.id === activeTabId);
+    if (tab) {
+      tab.content = parsed;
+      tab.title = parsed.title || new URL(url).hostname;
+      tab.url = url;
+    }
+    document.getElementById('url-input').value = url;
+    hideMainPasteOverlay();
+    document.getElementById('reader-view').classList.add('visible');
+    renderContent(parsed, url, 'main');
+    renderTabs(); updateOverflow();
+    addHistory(url, parsed.title || url);
+    saveState();
+    showStatus('✓ Page loaded from bookmarklet');
+  }
+}
+
+function checkBookmarkletReceive() {
+  // Future: could handle URL-param based receive here
+}
+
+function initPasteZones() {
+  setupPasteZone('main-paste-zone', 'main');
+  setupPasteZone('side-paste-zone', 'side');
+}
+
+function setupPasteZone(zoneId, target) {
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+
+  // Focus zone when overlay shown so Ctrl+V works immediately
+  zone.addEventListener('click', () => zone.focus());
+
+  zone.addEventListener('paste', async (e) => {
+    e.preventDefault();
+    const cd = e.clipboardData;
+    if (!cd) return;
+
+    // Prefer HTML from clipboard (Ctrl+A+C on a webpage puts HTML in clipboard)
+    let html = cd.getData('text/html');
+    const url = target === 'side' ? sideCurrentUrl : (tabs.find(t => t.id === activeTabId)?.url || '');
+
+    if (html && html.trim()) {
+      // Got rich HTML from clipboard — use it directly
+      zone.classList.add('active');
+      zone.querySelector('.paste-zone-label').textContent = 'Got it! Rendering…';
+      await new Promise(r => setTimeout(r, 200));
+      handlePastedHtml(html, url, target);
+      zone.classList.remove('active');
+    } else {
+      // Fallback: plain text — still try to parse as HTML in case they pasted source
+      const text = cd.getData('text/plain');
+      if (text && text.trim()) {
+        zone.classList.add('active');
+        zone.querySelector('.paste-zone-label').textContent = 'Got it! Rendering…';
+        await new Promise(r => setTimeout(r, 200));
+        handlePastedHtml(text, url, target);
+        zone.classList.remove('active');
+      } else {
+        showStatus('Clipboard is empty — try Ctrl+A then Ctrl+C on the page first');
+      }
+    }
+  });
+
+  // Also listen for Ctrl+V anywhere when overlay is open
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+      const overlay = target === 'main'
+        ? document.getElementById('main-paste-overlay')
+        : document.getElementById('paste-overlay');
+      if (overlay && overlay.classList.contains('show')) {
+        zone.focus();
+        // Let the paste event fire naturally after focus
+      }
+    }
   });
 }
 
