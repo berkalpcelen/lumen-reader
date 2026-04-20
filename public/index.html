@@ -1310,13 +1310,18 @@ function processNode(src, dest, baseUrl, target) {
       const rawHref = node.getAttribute('href') || '';
       const href = resolveUrl(rawHref, baseUrl);
 
-      // Detect TOC / anchor links — these scroll to a section in the reader
-      const isTocLink = rawHref.startsWith('#') ||
-        node.closest && node.closest('#toc, .toc, .mw-toc, #contents, .contents');
-      const anchorId = rawHref.startsWith('#') ? rawHref.slice(1) : null;
+      // Detect TOC / anchor links — pure #anchor OR same-page URL with #anchor
+      // e.g. "#History" or "https://site.com/wiki/Page#History"
+      const isInsideToc = node.closest && node.closest('#toc, .toc, .mw-toc, #contents, .contents, .tocright, .tocleft');
+      let anchorId = null;
+      if (rawHref.startsWith('#')) {
+        anchorId = rawHref.slice(1);
+      } else if (isInsideToc && href.includes('#')) {
+        // Full URL with hash — extract just the fragment
+        anchorId = href.split('#').slice(1).join('#');
+      }
 
-      if (isTocLink && anchorId) {
-        // Scroll-to-section link
+      if (anchorId) {
         const a = document.createElement('span');
         a.className = 'reader-link toc-link';
         a.title = 'Jump to section';
