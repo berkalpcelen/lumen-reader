@@ -398,9 +398,18 @@ const PROXY_BASE = IS_LOCAL ? null : '/api/fetch?url=';
 
 async function fetchPage(url) {
   if (!IS_LOCAL) {
-    // Use our own Vercel proxy
     const resp = await fetch(PROXY_BASE + encodeURIComponent(url));
-    if (!resp.ok) throw new Error('Server error ' + resp.status);
+    const ct = resp.headers.get('content-type') || '';
+    if (!resp.ok || ct.includes('application/json')) {
+      let errData = {};
+      try { errData = await resp.json(); } catch(e) {}
+      if (errData.error === 'cloudflare') {
+        const err = new Error('cloudflare');
+        err.cfSuggestion = errData.suggestion;
+        throw err;
+      }
+      throw new Error(errData.message || 'Server error ' + resp.status);
+    }
     return await resp.text();
   } else {
     // Fallback: try public proxies (may fail on restricted networks)
@@ -591,17 +600,23 @@ async function loadUrl(url, tabId, target = 'main') {
       renderContent(parsed, url, 'side');
     }
   } catch (err) {
+    let errBody = '';
+    if (err.message === 'cloudflare') {
+      errBody = `
+        This site uses <strong>Cloudflare bot protection</strong> which blocks automated fetching.<br><br>
+        Unfortunately this cannot be bypassed — it's a deliberate block by the site owner.<br><br>
+        ${err.cfSuggestion ? `<strong>Alternative:</strong> ${escHtml(err.cfSuggestion)}<br><br>` : ''}
+        <strong>Sites that work well:</strong> Microsoft Learn, Wikipedia, MDN, most blogs and news sites, wikis without Cloudflare.`;
+    } else if (IS_LOCAL) {
+      errBody = `You're running this file locally — your work network may be blocking the request.<br><br><strong>Solution:</strong> Deploy to Vercel so the fetch runs server-side.`;
+    } else {
+      errBody = `<strong>Error:</strong> ${escHtml(err.message)}<br><br>The page may require a login or block automated access.`;
+    }
     const errHtml = `
       <div class="error-wrap">
-        <div class="error-icon">⚠️</div>
-        <div class="error-title">Could not load page</div>
-        <div class="error-msg">
-          <strong>Error:</strong> ${escHtml(err.message)}<br><br>
-          ${IS_LOCAL
-            ? `You're running this file locally. Your work network may block proxy services.<br><br><strong>Solution:</strong> Deploy to Vercel — the fetch will happen server-side and bypass network restrictions.`
-            : `The page may require a login or block automated access. Try a different URL.`
-          }
-        </div>
+        <div class="error-icon">${err.message === 'cloudflare' ? '🛡️' : '⚠️'}</div>
+        <div class="error-title">${err.message === 'cloudflare' ? 'Blocked by Cloudflare' : 'Could not load page'}</div>
+        <div class="error-msg">${errBody}</div>
       </div>`;
     if (target === 'main') document.getElementById('reader-view').innerHTML = errHtml;
     else document.getElementById('side-content').innerHTML = errHtml;
