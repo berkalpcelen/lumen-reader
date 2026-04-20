@@ -4,37 +4,48 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lumen Reader</title>
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0f11;
-    --bg2: #161619;
-    --bg3: #1e1e23;
-    --bg4: #26262d;
-    --border: #2e2e38;
-    --border2: #3a3a47;
-    --text: #d8d8e8;
-    --text2: #9494aa;
-    --text3: #5c5c72;
-    --accent: #7b6ee8;
-    --accent2: #9d92f0;
-    --accent-glow: rgba(123,110,232,0.15);
-    --link: #8fb8f7;
-    --link-hover: #b8d4ff;
-    --tab-h: 42px;
-    --bar-h: 52px;
+    --bg:       #0c0c0f;
+    --bg2:      #111115;
+    --bg3:      #18181e;
+    --bg4:      #202028;
+    --bg5:      #28282f;
+    --border:   #252530;
+    --border2:  #32323f;
+    --border3:  #42424f;
+    --text:     #e2e2ee;
+    --text2:    #8e8ea8;
+    --text3:    #52526a;
+    --text4:    #35354a;
+    --accent:   #7c6fe0;
+    --accent2:  #a096f5;
+    --accent3:  #c4bcff;
+    --accent-glow: rgba(124,111,224,0.12);
+    --accent-glow2: rgba(124,111,224,0.06);
+    --link:     #7eb8ff;
+    --link-hover: #aad4ff;
+    --gold:     #c9a84c;
+    --gold2:    #e8c97a;
+    --teal:     #4ec9b0;
+    --success:  #5ecfa0;
+    --tab-h: 40px;
+    --bar-h: 50px;
+    --reader-max: 700px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     height: 100vh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── TAB BAR ── */
@@ -44,8 +55,8 @@
     background: var(--bg2);
     border-bottom: 1px solid var(--border);
     height: var(--tab-h);
-    padding: 0 8px;
-    gap: 4px;
+    padding: 0 6px;
+    gap: 3px;
     flex-shrink: 0;
     position: relative;
     z-index: 10;
@@ -61,24 +72,29 @@
   .tab {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 0 12px 0 14px;
-    height: 30px;
-    border-radius: 6px;
+    gap: 6px;
+    padding: 0 10px 0 12px;
+    height: 28px;
+    border-radius: 5px;
     background: transparent;
     border: 1px solid transparent;
-    color: var(--text2);
-    font-size: 12px;
-    font-family: 'Outfit', sans-serif;
+    color: var(--text3);
+    font-size: 11.5px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
     cursor: pointer;
     white-space: nowrap;
     max-width: 180px;
-    transition: all 0.15s;
+    transition: all 0.12s;
     flex-shrink: 0;
+    letter-spacing: 0.01em;
   }
-  .tab:hover { background: var(--bg3); color: var(--text); }
-  .tab.active { background: var(--bg4); border-color: var(--border2); color: var(--text); }
-  .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+  .tab:hover { background: var(--bg3); color: var(--text2); }
+  .tab.active {
+    background: var(--bg4); border-color: var(--border2);
+    color: var(--text); font-weight: 500;
+  }
+  .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px; }
   .tab-close {
     display: flex; align-items: center; justify-content: center;
     width: 16px; height: 16px; border-radius: 3px;
@@ -90,17 +106,17 @@
 
   #new-tab-btn {
     display: flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px; border-radius: 6px;
+    width: 26px; height: 26px; border-radius: 5px;
     background: transparent; border: none; color: var(--text3);
-    font-size: 18px; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    font-size: 16px; cursor: pointer; transition: all 0.12s; flex-shrink: 0;
   }
-  #new-tab-btn:hover { background: var(--bg3); color: var(--text); }
+  #new-tab-btn:hover { background: var(--bg3); color: var(--text2); }
 
   #overflow-btn {
     display: none; align-items: center; justify-content: center;
     padding: 0 8px; height: 28px; border-radius: 6px;
     background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text2); font-size: 11px; font-family: 'Outfit', sans-serif;
+    color: var(--text2); font-size: 11px; font-family: 'Inter', sans-serif;
     cursor: pointer; gap: 5px; white-space: nowrap; flex-shrink: 0;
   }
   #overflow-btn:hover { color: var(--text); }
@@ -128,137 +144,282 @@
   #address-bar {
     display: flex; align-items: center; gap: 8px;
     padding: 0 14px; height: var(--bar-h);
-    background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    flex-shrink: 0; box-shadow: 0 1px 0 var(--border);
   }
   #url-input {
-    flex: 1; background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; padding: 0 14px; height: 34px;
-    color: var(--text); font-size: 13px; font-family: 'JetBrains Mono', monospace;
+    flex: 1; background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 8px; padding: 0 14px; height: 32px;
+    color: var(--text); font-size: 12.5px; font-family: 'JetBrains Mono', monospace;
     outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.01em;
   }
-  #url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-  #url-input::placeholder { color: var(--text3); font-family: 'Outfit', sans-serif; }
+  #url-input:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--bg4);
+  }
+  #url-input::placeholder { color: var(--text4); font-family: 'Inter', sans-serif; font-size: 12px; }
 
   .bar-btn {
     display: flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 0 14px; height: 34px; border-radius: 8px; border: none;
-    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    gap: 6px; padding: 0 14px; height: 32px; border-radius: 7px; border: none;
+    font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap; letter-spacing: 0.01em;
   }
-  #go-btn { background: var(--accent); color: #fff; }
-  #go-btn:hover { background: var(--accent2); }
-  #go-btn:disabled { opacity: 0.5; cursor: default; }
+  #go-btn {
+    background: linear-gradient(135deg, var(--accent), #6a5dd4);
+    color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  #go-btn:hover { background: linear-gradient(135deg, var(--accent2), var(--accent)); }
+  #go-btn:disabled { opacity: 0.4; cursor: default; }
   .icon-btn {
     background: var(--bg3); color: var(--text2);
-    border: 1px solid var(--border); width: 34px; padding: 0; font-size: 15px;
+    border: 1px solid var(--border2); width: 32px; padding: 0; font-size: 14px;
   }
-  .icon-btn:hover { color: var(--text); border-color: var(--border2); }
+  .icon-btn:hover { color: var(--text); background: var(--bg4); border-color: var(--border3); }
 
   /* ── WORKSPACE ── */
   #workspace { flex: 1; display: flex; overflow: hidden; position: relative; }
   #main-content { flex: 1; overflow-y: auto; min-width: 0; position: relative; }
 
   /* ── READER ── */
-  .reader-wrap { max-width: 740px; margin: 0 auto; padding: 48px 40px 80px; }
-  .reader-meta { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-  .reader-domain {
-    font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text3);
-    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
+  .reader-wrap {
+    max-width: var(--reader-max); margin: 0 auto;
+    padding: 52px 48px 100px;
   }
-  .reader-title { font-family: 'Crimson Pro', serif; font-size: 36px; font-weight: 600; line-height: 1.2; color: var(--text); }
+  .reader-meta {
+    margin-bottom: 36px; padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .reader-meta::after {
+    content: ''; position: absolute; bottom: -1px; left: 0;
+    width: 48px; height: 2px; background: var(--accent);
+    border-radius: 2px;
+  }
+  .reader-domain {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10.5px; font-family: 'JetBrains Mono', monospace; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 14px;
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .reader-title {
+    font-family: 'Lora', serif; font-size: 34px; font-weight: 700;
+    line-height: 1.25; color: var(--text); letter-spacing: -0.01em;
+  }
 
-  .reader-body { font-family: 'Crimson Pro', serif; font-size: 20px; line-height: 1.75; color: var(--text); }
-  .reader-body h1 { font-size: 32px; font-weight: 600; margin: 40px 0 16px; color: var(--text); line-height: 1.2; }
-  .reader-body h2 { font-size: 26px; font-weight: 600; margin: 32px 0 12px; color: var(--text); line-height: 1.3; }
-  .reader-body h3 { font-size: 22px; font-weight: 600; margin: 24px 0 10px; color: var(--text); }
-  .reader-body h4, .reader-body h5, .reader-body h6 { font-size: 19px; font-weight: 600; margin: 20px 0 8px; color: var(--text2); }
-  .reader-body p { margin: 0 0 18px; }
-  .reader-body ul, .reader-body ol { margin: 0 0 18px 24px; }
-  .reader-body li { margin-bottom: 6px; }
-  .reader-body strong, .reader-body b { font-weight: 600; color: #e8e8f8; }
-  .reader-body em, .reader-body i { font-style: italic; }
+  .reader-body {
+    font-family: 'Lora', serif; font-size: 18.5px;
+    line-height: 1.85; color: var(--text2);
+    letter-spacing: 0.005em;
+  }
+  .reader-body h1 {
+    font-size: 28px; font-weight: 700; margin: 52px 0 18px;
+    color: var(--text); line-height: 1.25; letter-spacing: -0.01em;
+    font-family: 'Lora', serif;
+  }
+  .reader-body h2 {
+    font-size: 22px; font-weight: 600; margin: 44px 0 14px;
+    color: var(--text); line-height: 1.3; font-family: 'Inter', sans-serif;
+    font-weight: 600; letter-spacing: -0.01em;
+    padding-left: 14px; border-left: 3px solid var(--accent);
+  }
+  .reader-body h3 {
+    font-size: 16px; font-weight: 600; margin: 28px 0 10px;
+    color: var(--text); font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em; line-height: 1.4;
+    padding: 8px 12px;
+    background: var(--bg3);
+    border-radius: 6px;
+    border-left: 2px solid var(--accent2);
+    display: block;
+  }
+  .reader-body h4, .reader-body h5, .reader-body h6 {
+    font-size: 16px; font-weight: 600; margin: 24px 0 8px;
+    color: var(--text2); font-family: 'Inter', sans-serif;
+  }
+  .reader-body p { margin: 0 0 20px; }
+  .reader-body > p:first-of-type::first-letter {
+    font-size: 3.2em; font-weight: 700; float: left; line-height: 0.75;
+    margin: 6px 10px 0 0; color: var(--accent2); font-family: 'Lora', serif;
+  }
+  .reader-body ul { margin: 0 0 20px 0; padding-left: 0; list-style: none; }
+  .reader-body ol { margin: 0 0 20px 0; padding-left: 0; list-style: none; counter-reset: ol-counter; }
+  .reader-body li {
+    margin-bottom: 8px; padding-left: 22px; position: relative;
+  }
+  .reader-body ul > li::before {
+    content: ''; position: absolute; left: 4px; top: 11px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); opacity: 0.7;
+  }
+  .reader-body ol > li {
+    counter-increment: ol-counter;
+  }
+  .reader-body ol > li::before {
+    content: counter(ol-counter);
+    position: absolute; left: 0; top: 1px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--accent2); font-weight: 500; width: 16px; text-align: right;
+  }
+  .reader-body strong, .reader-body b {
+    font-weight: 700; color: var(--text);
+  }
+  .reader-body em, .reader-body i { font-style: italic; color: var(--text); }
   .reader-body blockquote {
-    border-left: 3px solid var(--accent); margin: 24px 0; padding: 12px 20px;
-    background: var(--bg3); border-radius: 0 6px 6px 0; color: var(--text2); font-style: italic;
+    border-left: 3px solid var(--gold); margin: 28px 0; padding: 14px 20px 14px 24px;
+    background: linear-gradient(90deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+    border-radius: 0 8px 8px 0; color: var(--text2); font-style: italic;
+    position: relative;
+  }
+  .reader-body blockquote::before {
+    content: '"'; position: absolute; top: -8px; left: 12px;
+    font-size: 48px; color: var(--gold); opacity: 0.3;
+    font-family: 'Lora', serif; line-height: 1;
   }
   .reader-body code {
-    font-family: 'JetBrains Mono', monospace; font-size: 14px;
-    background: var(--bg3); border: 1px solid var(--border);
-    padding: 2px 6px; border-radius: 4px; color: var(--accent2);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    background: var(--bg4); border: 1px solid var(--border2);
+    padding: 2px 7px; border-radius: 4px; color: var(--teal);
   }
   .reader-body pre {
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: 8px; padding: 16px; overflow-x: auto; margin: 0 0 18px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 20px; overflow-x: auto; margin: 0 0 20px;
+    position: relative;
   }
-  .reader-body pre code { background: none; border: none; padding: 0; }
-  .reader-body table { width: 100%; border-collapse: collapse; margin: 0 0 24px; font-size: 16px; }
+  .reader-body pre::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--teal));
+    border-radius: 10px 10px 0 0;
+  }
+  .reader-body pre code { background: none; border: none; padding: 0; color: var(--text); font-size: 13px; }
+  .reader-body table {
+    width: 100%; border-collapse: collapse; margin: 0 0 28px;
+    font-size: 15px; font-family: 'Inter', sans-serif;
+    border: 1px solid var(--border2); border-radius: 8px; overflow: hidden;
+  }
   .reader-body th {
-    background: var(--bg3); border: 1px solid var(--border); padding: 10px 14px;
-    text-align: left; font-family: 'Outfit', sans-serif; font-size: 13px;
-    font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--bg4); padding: 11px 16px;
+    text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--accent2); text-transform: uppercase; letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border2); border-right: 1px solid var(--border);
   }
-  .reader-body td { border: 1px solid var(--border); padding: 10px 14px; vertical-align: top; }
-  .reader-body tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-  .reader-body hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  .reader-body th:last-child { border-right: none; }
+  .reader-body td {
+    padding: 10px 16px; vertical-align: top;
+    border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+    color: var(--text2); font-size: 15px;
+  }
+  .reader-body td:last-child { border-right: none; }
+  .reader-body tr:last-child td { border-bottom: none; }
+  .reader-body tr:hover td { background: rgba(124,111,224,0.04); color: var(--text); }
+  .reader-body hr {
+    border: none; margin: 40px 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .reader-body hr::before, .reader-body hr::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .reader-body hr::after { content: '◆'; flex: none; height: auto;
+    font-size: 8px; color: var(--text4); }
 
   .reader-link {
     color: var(--link); text-decoration: none;
-    border-bottom: 1px solid rgba(143,184,247,0.3);
-    transition: color 0.15s, border-color 0.15s; cursor: pointer;
+    border-bottom: 1px solid rgba(126,184,255,0.25);
+    transition: all 0.15s; cursor: pointer;
+    padding-bottom: 1px;
+    display: inline;
+    /* Ensure space between link and surrounding text */
+    margin: 0 0.05em;
   }
-  .reader-link:hover { color: var(--link-hover); border-color: var(--link-hover); }
+  .reader-link:hover {
+    color: var(--link-hover); border-color: rgba(170,212,255,0.6);
+    background: rgba(126,184,255,0.06); border-radius: 2px;
+  }
 
   /* ── IMAGE PILL ── */
-  .img-block { margin: 12px 0; }
+  .img-block { margin: 16px 0; }
   .img-pill {
-    display: inline-flex; align-items: center; gap: 7px;
-    background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
-    padding: 5px 12px; margin: 4px 0; font-family: 'Outfit', sans-serif;
-    font-size: 13px; color: var(--text2); cursor: pointer;
-    transition: all 0.15s; user-select: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px;
+    padding: 5px 14px 5px 10px; margin: 4px 0; font-family: 'Inter', sans-serif;
+    font-size: 12px; color: var(--text3); cursor: pointer;
+    transition: all 0.15s; user-select: none; letter-spacing: 0.01em;
   }
-  .img-pill:hover { border-color: var(--border2); color: var(--text); }
-  .img-pill-icon { font-size: 14px; }
-  .img-pill-label { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .img-pill-arrow { font-size: 10px; opacity: 0.5; margin-left: 4px; transition: transform 0.2s; }
-  .img-pill.open .img-pill-arrow { transform: rotate(90deg); }
-  .img-expanded { display: none; margin: 8px 0 16px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--bg3); }
-  .img-expanded.show { display: block; }
-  .img-expanded img { max-width: 100%; display: block; opacity: 0.9; }
-  .img-caption { padding: 8px 12px; font-family: 'Outfit', sans-serif; font-size: 12px; color: var(--text3); font-style: italic; border-top: 1px solid var(--border); }
+  .img-pill:hover { border-color: var(--accent); color: var(--text2); background: var(--bg4); }
+  .img-pill-icon { font-size: 13px; opacity: 0.7; }
+  .img-pill-label { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .img-pill-arrow { font-size: 9px; opacity: 0.4; margin-left: 2px; transition: transform 0.2s; }
+  .img-pill.open { border-color: var(--accent); color: var(--text2); }
+  .img-pill.open .img-pill-arrow { transform: rotate(90deg); opacity: 0.7; }
+  .img-expanded {
+    display: none; margin: 10px 0 20px; border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border2); background: var(--bg3);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .img-expanded.show { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .img-expanded img { max-width: 100%; display: block; opacity: 0.92; }
+  .img-caption {
+    padding: 10px 16px 11px;
+    font-family: 'Lora', serif; font-size: 13.5px;
+    color: var(--text3); font-style: italic;
+    border-top: 1px solid var(--border2);
+    letter-spacing: 0.01em; line-height: 1.6;
+    background: var(--bg4);
+    display: block;
+  }
+  .img-caption::before {
+    content: '\201C';
+    font-size: 18px; line-height: 0; vertical-align: -4px;
+    margin-right: 3px; color: var(--accent); opacity: 0.5;
+    font-family: 'Lora', serif;
+  }
+  .img-caption::after {
+    content: '\201D';
+    font-size: 18px; line-height: 0; vertical-align: -4px;
+    margin-left: 3px; color: var(--accent); opacity: 0.5;
+    font-family: 'Lora', serif;
+  }
 
   /* ── HOME SCREEN ── */
-  #home-screen { display: none; padding: 60px 40px; max-width: 800px; margin: 0 auto; }
+  #home-screen { display: none; padding: 56px 48px; max-width: 760px; margin: 0 auto; }
   #home-screen.visible { display: block; }
-  .home-logo { display: flex; align-items: center; gap: 14px; margin-bottom: 48px; }
+  .home-logo { display: flex; align-items: center; gap: 16px; margin-bottom: 52px; }
   .home-logo-icon {
-    width: 44px; height: 44px; background: var(--accent); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), #5a4fc0);
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 4px 16px rgba(124,111,224,0.3);
   }
-  .home-logo-text { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
-  .home-logo-sub { font-size: 13px; color: var(--text3); font-weight: 300; }
+  .home-logo-text {
+    font-family: 'Lora', serif; font-size: 26px; font-weight: 700;
+    letter-spacing: -0.02em; color: var(--text);
+  }
+  .home-logo-sub { font-size: 12.5px; color: var(--text3); font-weight: 400; margin-top: 2px; }
   .home-section-title {
-    font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3);
-    margin-bottom: 12px; margin-top: 36px;
+    font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--text3);
+    margin-bottom: 10px; margin-top: 36px;
   }
   .home-section-title:first-of-type { margin-top: 0; }
-  .history-list { display: flex; flex-direction: column; gap: 3px; }
+  .history-list { display: flex; flex-direction: column; gap: 2px; }
   .history-item {
-    display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-    border-radius: 8px; cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: center; gap: 14px; padding: 10px 14px;
+    border-radius: 8px; cursor: pointer; transition: all 0.12s;
     border: 1px solid transparent;
   }
   .history-item:hover { background: var(--bg3); border-color: var(--border); }
-  .history-favicon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .history-favicon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; opacity: 0.7; }
   .history-info { flex: 1; min-width: 0; }
-  .history-title { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .history-url { font-size: 11px; color: var(--text3); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .history-delete { opacity: 0; font-size: 12px; color: var(--text3); padding: 4px 6px; border-radius: 4px; transition: opacity 0.15s, background 0.15s; flex-shrink: 0; }
+  .history-title { font-size: 13.5px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  .history-url { font-size: 10.5px; color: var(--text3); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .history-delete { opacity: 0; font-size: 11px; color: var(--text4); padding: 3px 6px; border-radius: 4px; transition: opacity 0.12s, background 0.12s; flex-shrink: 0; }
   .history-item:hover .history-delete { opacity: 1; }
-  .history-delete:hover { background: var(--bg4); color: var(--text); }
-  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px; color: var(--text3); font-size: 14px; text-align: center; }
-  .empty-state-icon { font-size: 32px; opacity: 0.4; }
+  .history-delete:hover { background: var(--bg5); color: var(--text2); }
+  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px 40px; color: var(--text3); font-size: 13px; text-align: center; }
+  .empty-state-icon { font-size: 28px; opacity: 0.25; }
 
   /* ── LOADING / ERROR ── */
   #reader-view { display: none; }
@@ -290,18 +451,18 @@
     height: var(--bar-h); border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
   #side-title {
-    flex: 1; font-size: 12px; font-family: 'Outfit', sans-serif;
+    flex: 1; font-size: 12px; font-family: 'Inter', sans-serif;
     color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   #side-paste-btn {
     background: var(--accent); color: #fff; border: none; border-radius: 7px;
-    padding: 0 12px; height: 30px; font-family: 'Outfit', sans-serif; font-size: 12px;
+    padding: 0 12px; height: 30px; font-family: 'Inter', sans-serif; font-size: 12px;
     cursor: pointer; white-space: nowrap; transition: background 0.15s; flex-shrink: 0;
   }
   #side-paste-btn:hover { background: var(--accent2); }
   #side-promote-btn {
     background: var(--bg3); color: var(--text2); border: 1px solid var(--border);
-    border-radius: 7px; padding: 0 10px; height: 30px; font-family: 'Outfit', sans-serif;
+    border-radius: 7px; padding: 0 10px; height: 30px; font-family: 'Inter', sans-serif;
     font-size: 12px; cursor: pointer; white-space: nowrap; transition: all 0.15s;
     display: flex; align-items: center; gap: 5px; flex-shrink: 0;
   }
@@ -313,12 +474,14 @@
   }
   #side-close-btn:hover { background: var(--bg3); color: var(--text); }
   #side-content { flex: 1; overflow-y: auto; }
-  .side-reader-wrap { padding: 28px 24px 60px; }
-  .side-reader-wrap .reader-title { font-size: 24px; }
-  .side-reader-wrap .reader-body { font-size: 17px; }
-  .side-reader-wrap .reader-body h1 { font-size: 24px; }
-  .side-reader-wrap .reader-body h2 { font-size: 21px; }
-  .side-reader-wrap .reader-body h3 { font-size: 19px; }
+  .side-reader-wrap { padding: 24px 22px 60px; }
+  .side-reader-wrap .reader-title { font-size: 21px; line-height: 1.3; }
+  .side-reader-wrap .reader-body { font-size: 15.5px; line-height: 1.8; }
+  .side-reader-wrap .reader-body h1 { font-size: 20px; }
+  .side-reader-wrap .reader-body h2 { font-size: 16px; }
+  .side-reader-wrap .reader-body h3 { font-size: 13px; padding: 6px 10px; }
+  .side-reader-wrap .reader-meta::after { width: 32px; }
+  .side-reader-wrap .reader-body > p:first-of-type::first-letter { font-size: 2.6em; }
 
   /* ── PASTE OVERLAY ── */
   #paste-overlay {
@@ -329,6 +492,30 @@
   }
   #paste-overlay.show { display: flex; }
   .paste-title { font-size: 16px; font-weight: 500; color: var(--text); text-align: center; }
+  .paste-tabs {
+    display: flex; gap: 4px; background: var(--bg4);
+    border: 1px solid var(--border2); border-radius: 8px; padding: 3px;
+    width: 100%;
+  }
+  .paste-tab {
+    flex: 1; padding: 7px 12px; border-radius: 6px; border: none;
+    font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; color: var(--text3);
+    background: transparent; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .paste-tab:hover { color: var(--text2); }
+  .paste-tab.active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  .paste-panel { display: none; width: 100%; }
+  .paste-panel.active { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+  .paste-html-textarea {
+    width: 100%; height: 130px; background: var(--bg3);
+    border: 1px solid var(--border2); border-radius: 8px;
+    color: var(--text); font-size: 12px; font-family: 'JetBrains Mono', monospace;
+    padding: 10px 12px; outline: none; resize: none; transition: border-color 0.2s;
+  }
+  .paste-html-textarea:focus { border-color: var(--accent); }
+  .paste-html-textarea::placeholder { font-family: 'Inter', sans-serif; color: var(--text3); font-size: 12px; }
   .paste-steps {
     font-size: 13px; color: var(--text2); line-height: 2;
     text-align: center; background: var(--bg3);
@@ -354,17 +541,17 @@
     padding: 10px 12px; outline: none; resize: none; transition: border-color 0.2s;
   }
   #paste-textarea:focus { border-color: var(--accent); }
-  #paste-textarea::placeholder { font-family: 'Outfit', sans-serif; color: var(--text3); }
+  #paste-textarea::placeholder { font-family: 'Inter', sans-serif; color: var(--text3); }
   .paste-actions { display: flex; gap: 8px; width: 100%; }
   .paste-confirm {
     flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 8px;
-    padding: 0 16px; height: 36px; font-family: 'Outfit', sans-serif; font-size: 13px;
+    padding: 0 16px; height: 36px; font-family: 'Inter', sans-serif; font-size: 13px;
     font-weight: 500; cursor: pointer; transition: background 0.15s;
   }
   .paste-confirm:hover { background: var(--accent2); }
   .paste-cancel {
     background: var(--bg3); color: var(--text2); border: 1px solid var(--border);
-    border-radius: 8px; padding: 0 16px; height: 36px; font-family: 'Outfit', sans-serif;
+    border-radius: 8px; padding: 0 16px; height: 36px; font-family: 'Inter', sans-serif;
     font-size: 13px; cursor: pointer; transition: all 0.15s; width: 100%;
   }
   .paste-cancel:hover { color: var(--text); }
@@ -379,12 +566,12 @@
   .paste-zone:hover, .paste-zone:focus { border-color: var(--accent); background: var(--bg4); }
   .paste-zone.active { border-color: var(--success, #5ecfa0); background: rgba(94,207,160,0.05); }
   .paste-zone-icon { font-size: 28px; opacity: 0.6; }
-  .paste-zone-label { font-size: 14px; color: var(--text); font-family: 'Outfit', sans-serif; }
+  .paste-zone-label { font-size: 14px; color: var(--text); font-family: 'Inter', sans-serif; }
   .paste-zone-label kbd {
     background: var(--bg); border: 1px solid var(--border2); border-radius: 4px;
     padding: 1px 7px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent2);
   }
-  .paste-zone-sub { font-size: 12px; color: var(--text3); font-family: 'Outfit', sans-serif; }
+  .paste-zone-sub { font-size: 12px; color: var(--text3); font-family: 'Inter', sans-serif; }
   .paste-zone.ready { border-color: #5ecfa0; }
   .paste-zone.ready .paste-zone-icon::after { content: ' ✓'; font-size: 20px; color: #5ecfa0; }
 
@@ -406,26 +593,29 @@
     padding: 10px 12px; outline: none; resize: none; transition: border-color 0.2s;
   }
   #main-paste-overlay #main-paste-textarea:focus { border-color: var(--accent); }
-  #main-paste-overlay #main-paste-textarea::placeholder { font-family: 'Outfit', sans-serif; color: var(--text3); }
+  #main-paste-overlay #main-paste-textarea::placeholder { font-family: 'Inter', sans-serif; color: var(--text3); }
   #main-paste-overlay .paste-actions { max-width: 520px; width: 100%; }
   .side-reader-wrap .reader-body h1 { font-size: 24px; }
   .side-reader-wrap .reader-body h2 { font-size: 21px; }
   .side-reader-wrap .reader-body h3 { font-size: 19px; }
 
-  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border3); }
 
   #status-bar {
-    position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%);
-    background: var(--bg3); border: 1px solid var(--border2); border-radius: 20px;
-    padding: 6px 14px; font-size: 12px; color: var(--text2);
-    font-family: 'JetBrains Mono', monospace; opacity: 0; transition: opacity 0.3s;
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: var(--bg4); border: 1px solid var(--border2);
+    border-radius: 24px; padding: 7px 16px; font-size: 12px; color: var(--text2);
+    font-family: 'Inter', sans-serif; opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    transform: translateX(-50%) translateY(4px);
     pointer-events: none; z-index: 500; white-space: nowrap;
     max-width: 400px; overflow: hidden; text-overflow: ellipsis;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
   }
-  #status-bar.show { opacity: 1; }
+  #status-bar.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -441,29 +631,46 @@
   <button class="bar-btn icon-btn" title="Home" onclick="goHome()">⌂</button>
   <input id="url-input" type="text" placeholder="Enter a URL… e.g. https://wh40k.lexicanum.com/wiki/Emperor_of_Mankind" />
   <button class="bar-btn" id="go-btn" onclick="navigateCurrent()">Open &amp; Read →</button>
-  <button class="bar-btn icon-btn" id="paste-main-btn" title="Paste HTML into reader" onclick="showMainPasteOverlay()" style="font-size:17px;">⌨</button>
+  <button class="bar-btn icon-btn" id="paste-main-btn" title="Paste into reader" onclick="showMainPasteOverlay()" style="font-size:15px;">🌐</button>
 </div>
 
 <div id="workspace">
   <div id="main-content">
     <div id="main-paste-overlay">
-      <div class="paste-title">Paste page content into Lumen</div>
-      <div class="paste-steps">
-        In the browser tab that just opened:<br>
-        Press <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
-        Then click the box below and press <kbd>Ctrl+V</kbd>
-      </div>
+      <div class="paste-title">Load page into Lumen</div>
       <div class="paste-url-hint" id="main-paste-url-hint"></div>
-      <div id="main-paste-zone" class="paste-zone" tabindex="0">
-        <div class="paste-zone-icon">⌨</div>
-        <div class="paste-zone-label">Click here, then press <kbd>Ctrl+V</kbd></div>
-        <div class="paste-zone-sub">Works with normal Ctrl+A → Ctrl+C from any page</div>
+      <div class="paste-tabs">
+        <button class="paste-tab active" id="main-tab-paste" onclick="switchPasteTab('main','paste')">📋 Paste  <span style="font-size:11px;opacity:0.6;">Ctrl+V</span></button>
+        <button class="paste-tab" id="main-tab-html" onclick="switchPasteTab('main','html')">🔤 HTML source</button>
       </div>
-      <div class="paste-actions">
-        <button class="paste-cancel" onclick="hideMainPasteOverlay()">Cancel</button>
+      <div class="paste-panel active" id="main-panel-paste">
+        <div class="paste-steps">
+          In the open tab: <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
+          Then click below and press <kbd>Ctrl+V</kbd>
+        </div>
+        <div id="main-paste-zone" class="paste-zone" tabindex="0">
+          <div class="paste-zone-icon">📋</div>
+          <div class="paste-zone-label">Click here, then <kbd>Ctrl+V</kbd></div>
+          <div class="paste-zone-sub">Reads rich HTML automatically from your clipboard</div>
+        </div>
       </div>
+      <div class="paste-panel" id="main-panel-html">
+        <div class="paste-steps">
+          In the open tab press <kbd>Ctrl+U</kbd> → <kbd>Ctrl+A</kbd> → <kbd>Ctrl+C</kbd><br>
+          Then paste the raw HTML source below
+        </div>
+        <textarea class="paste-html-textarea" id="main-html-textarea" placeholder="Paste raw HTML source here…"></textarea>
+        <button class="paste-confirm" onclick="renderMainHtml()" style="width:100%;">Render →</button>
+      </div>
+      <div class="paste-actions" id="main-paste-actions">
+        <button class="paste-cancel" onclick="hideMainPasteOverlay()" id="main-cancel-btn" style="display:none;">← Back to article</button>
+        <button class="paste-cancel" onclick="toggleHomeHistory()" id="main-history-btn">📋 Recent pages</button>
+      </div>
+    <div id="home-history-drawer" style="display:none;width:100%;max-width:520px;max-height:280px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;margin-top:-4px;">
+      <div id="home-history-inner"></div>
     </div>
-    <div id="home-screen">
+    </div>
+    <div id="home-screen" style="display:none!important;">
       <div class="home-logo">
         <div class="home-logo-icon">📖</div>
         <div>
@@ -504,23 +711,39 @@
   <div id="side-panel">
     <div id="side-bar">
       <span id="side-title">Side panel</span>
-      <button id="side-paste-btn" onclick="showPasteOverlay()">⌨ Paste HTML</button>
+      <button id="side-paste-btn" onclick="showPasteOverlay()">🌐 Paste</button>
       <button id="side-promote-btn" onclick="promoteSideToTab()">⬆ New Tab</button>
       <button id="side-close-btn" onclick="closePanel()">✕</button>
     </div>
     <div id="side-content" style="position:relative;">
       <div id="paste-overlay">
-        <div class="paste-title">Paste page content into the side panel</div>
-        <div class="paste-steps">
-          In the browser tab that just opened:<br>
-          Press <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
-          Then click the box below and press <kbd>Ctrl+V</kbd>
-        </div>
+        <div class="paste-title">Load page into side panel</div>
         <div class="paste-url-hint" id="paste-url-hint"></div>
-        <textarea id="paste-textarea" placeholder="Paste copied page content here…"></textarea>
+        <div class="paste-tabs">
+          <button class="paste-tab active" id="side-tab-paste" onclick="switchPasteTab('side','paste')">📋 Paste  <span style="font-size:11px;opacity:0.6;">Ctrl+V</span></button>
+          <button class="paste-tab" id="side-tab-html" onclick="switchPasteTab('side','html')">🔤 HTML source</button>
+        </div>
+        <div class="paste-panel active" id="side-panel-paste">
+          <div class="paste-steps">
+            In the open tab: <kbd>Ctrl+A</kbd> then <kbd>Ctrl+C</kbd><br>
+            Then click below and press <kbd>Ctrl+V</kbd>
+          </div>
+          <div id="side-paste-zone" class="paste-zone" tabindex="0">
+            <div class="paste-zone-icon">📋</div>
+            <div class="paste-zone-label">Click here, then <kbd>Ctrl+V</kbd></div>
+            <div class="paste-zone-sub">Reads rich HTML automatically from your clipboard</div>
+          </div>
+        </div>
+        <div class="paste-panel" id="side-panel-html">
+          <div class="paste-steps">
+            In the open tab press <kbd>Ctrl+U</kbd> → <kbd>Ctrl+A</kbd> → <kbd>Ctrl+C</kbd><br>
+            Then paste the raw HTML source below
+          </div>
+          <textarea class="paste-html-textarea" id="side-html-textarea" placeholder="Paste raw HTML source here…"></textarea>
+          <button class="paste-confirm" onclick="renderSideHtml()" style="width:100%;">Render →</button>
+        </div>
         <div class="paste-actions">
           <button class="paste-cancel" onclick="hidePasteOverlay()">Cancel</button>
-          <button class="paste-confirm" onclick="renderPasted()">Render →</button>
         </div>
       </div>
     </div>
@@ -729,21 +952,24 @@ function showMainPasteOverlay() {
   document.getElementById('home-screen').classList.remove('visible');
   document.getElementById('reader-view').classList.remove('visible');
   document.getElementById('main-paste-overlay').classList.add('show');
-  setTimeout(() => {
-    const z = document.getElementById('main-paste-zone');
-    if (z) z.focus();
-  }, 150);
+  switchPasteTab('main', 'paste');
+  // Show "Back to article" only if there's content to go back to
+  const tab = tabs.find(t => t.id === activeTabId);
+  const hasContent = tab && tab.content;
+  const cancelBtn = document.getElementById('main-cancel-btn');
+  const historyBtn = document.getElementById('main-history-btn');
+  if (cancelBtn) cancelBtn.style.display = hasContent ? 'block' : 'none';
+  if (historyBtn) historyBtn.style.flex = hasContent ? '0 0 auto' : '1';
 }
 
 function hideMainPasteOverlay() {
-  document.getElementById('main-paste-overlay').classList.remove('show');
-  // If there's existing content show it, else show home
   const tab = tabs.find(t => t.id === activeTabId);
   if (tab && tab.content) {
+    // Has content — hide overlay and show the reader
+    document.getElementById('main-paste-overlay').classList.remove('show');
     document.getElementById('reader-view').classList.add('visible');
-  } else {
-    showHome();
   }
+  // If no content, keep the overlay open — it IS the home view
 }
 
 function renderMainPasted() {} // kept for compat
@@ -780,6 +1006,33 @@ function handlePastedHtml(html, url, target) {
   }
 }
 
+function toggleHomeHistory() {
+  const drawer = document.getElementById('home-history-drawer');
+  const btn = document.getElementById('main-history-btn');
+  const isOpen = drawer.style.display !== 'none';
+  drawer.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '📋 Recent pages' : '✕ Close history';
+  if (!isOpen) renderHomeHistory();
+}
+
+function renderHomeHistory() {
+  const inner = document.getElementById('home-history-inner');
+  if (!inner) return;
+  const h = getHistory();
+  if (!h.length) {
+    inner.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--text3);">No history yet</div>';
+    return;
+  }
+  inner.innerHTML = h.slice(0, 15).map(x => `
+    <div onclick="loadFromHistory('${escHtml(x.url)}')" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+      <span style="font-size:14px;opacity:0.6;">📄</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(x.title)}</div>
+        <div style="font-size:10.5px;color:var(--text3);font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">${escHtml(x.url)}</div>
+      </div>
+    </div>`).join('');
+}
+
 function extractTitleFromUrl(url) {
   try {
     const u = new URL(url);
@@ -796,9 +1049,13 @@ function goHome() {
 }
 
 function showHome() {
-  document.getElementById('home-screen').classList.add('visible');
   document.getElementById('reader-view').classList.remove('visible');
   document.getElementById('reader-view').innerHTML = '';
+  document.getElementById('home-screen').classList.remove('visible');
+  // Clear URL hint since this is just the home state
+  const hint = document.getElementById('main-paste-url-hint');
+  if (hint) hint.textContent = '';
+  showMainPasteOverlay();
   renderHistory();
 }
 
@@ -914,31 +1171,105 @@ function renderContent(parsed, url, target) {
 }
 
 function processNode(src, dest, baseUrl, target) {
+  // Collect nodes that are captions (thumbcaption, figcaption, or text after img)
+  // so we can skip them when encountered as regular nodes
+  const captionNodes = new Set();
+  src.querySelectorAll && src.querySelectorAll(
+    '.thumbcaption, .gallerytext, figcaption, .caption, .wp-caption-text, .image-caption'
+  ).forEach(el => captionNodes.add(el));
+
+  // Also track alt texts for loose text node suppression
+  const imgAlts = new Set();
+  src.querySelectorAll && src.querySelectorAll('img').forEach(img => {
+    const a = (img.getAttribute('alt') || '').trim();
+    if (a) imgAlts.add(a.toLowerCase().replace(/\[\w+\]/g, '').trim());
+  });
+
+  // Helper: extract caption text from a node
+  function getCaptionText(el) {
+    return el ? el.textContent.trim() : '';
+  }
+
+  // Helper: find caption for an img node (looks at siblings and parent structure)
+  function findCaption(imgNode, altText) {
+    // 1. Check parent .thumb or figure for a thumbcaption/figcaption
+    let p = imgNode.parentElement;
+    for (let i = 0; i < 4 && p; i++) {
+      const cap = p.querySelector('.thumbcaption, figcaption, .gallerytext, .caption, .wp-caption-text, .image-caption');
+      if (cap) { captionNodes.add(cap); return getCaptionText(cap); }
+      p = p.parentElement;
+    }
+    // 2. Check next sibling text node
+    let sib = imgNode.nextSibling;
+    while (sib) {
+      if (sib.nodeType === Node.TEXT_NODE) {
+        const t = sib.textContent.trim();
+        if (t && t.length > 3) return t;
+      }
+      if (sib.nodeType === Node.ELEMENT_NODE) break;
+      sib = sib.nextSibling;
+    }
+    // 3. Fall back to alt text
+    return altText || '';
+  }
+
+  const childArr = Array.from(src.childNodes);
+  let skipNext = false;
+
   src.childNodes.forEach(node => {
+    // Skip nodes we've already consumed as captions
+    if (captionNodes.has(node)) return;
+
     if (node.nodeType === Node.TEXT_NODE) {
-      if (node.textContent.trim()) dest.appendChild(document.createTextNode(node.textContent));
+      const t = node.textContent.trim();
+      if (!t) return;
+      // Suppress text that is essentially an image alt/caption (with optional citation suffix)
+      const tClean = t.toLowerCase().replace(/\[\w+\]/g, '').trim();
+      if (tClean.length > 3 && imgAlts.has(tClean)) return;
+      dest.appendChild(document.createTextNode(node.textContent));
       return;
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     const tag = node.tagName.toLowerCase();
     if (['script','style','noscript','iframe','button','form','input','select','textarea','nav','aside'].includes(tag)) return;
 
+    // Skip known caption wrapper elements (already consumed)
+    if (node.classList && (
+      node.classList.contains('thumbcaption') ||
+      node.classList.contains('gallerytext') ||
+      node.classList.contains('caption') ||
+      node.classList.contains('wp-caption-text') ||
+      node.classList.contains('image-caption')
+    )) return;
+
     if (tag === 'img') {
       const s = resolveUrl(node.getAttribute('src') || node.getAttribute('data-src') || '', baseUrl);
       const alt = node.getAttribute('alt') || '';
       if (!s || s.startsWith('data:')) return;
+      const w = parseInt(node.getAttribute('width') || '999');
+      const h = parseInt(node.getAttribute('height') || '999');
+      if (w < 20 || h < 20) return;
+
+      const caption = findCaption(node, alt);
+      // Strip citation markers like [38h] from pill label for cleanliness
+      const captionClean = caption.replace(/\[\w+\]/g, '').trim();
       const pid = 'img_' + Math.random().toString(36).slice(2);
+      const fname = decodeURIComponent(s.split('/').pop() || 'Image')
+        .replace(/\.jpg|\.png|\.gif|\.webp|\.svg/i,'')
+        .replace(/[_-]/g,' ').trim();
+      const pillLabel = captionClean || fname || 'Image';
+
       const block = document.createElement('div');
       block.className = 'img-block';
       block.innerHTML = `
         <span class="img-pill" id="pill_${pid}" onclick="toggleImg('${pid}')">
-          <span class="img-pill-icon">📷</span>
-          <span class="img-pill-label">${escHtml(alt || s.split('/').pop() || 'Image')}</span>
+          <span class="img-pill-icon">🖼</span>
+          <span class="img-pill-label">${escHtml(pillLabel)}</span>
           <span class="img-pill-arrow">▶</span>
         </span>
         <div class="img-expanded" id="exp_${pid}">
           <img src="${escHtml(s)}" alt="${escHtml(alt)}" loading="lazy" onerror="this.parentElement.style.display='none'">
-          ${alt ? `<div class="img-caption">${escHtml(alt)}</div>` : ''}
+          ${caption ? `<div class="img-caption">${escHtml(caption)}</div>` : ''}
         </div>`;
       dest.appendChild(block);
       return;
@@ -953,7 +1284,18 @@ function processNode(src, dest, baseUrl, target) {
         a.dataset.href = href;
         a.addEventListener('click', () => openInPanel(href));
         processNode(node, a, baseUrl, target);
+        // Ensure there's whitespace before the link if prev sibling ends with a word char
+        const prev = dest.lastChild;
+        if (prev && prev.nodeType === Node.TEXT_NODE) {
+          if (/\S$/.test(prev.textContent)) {
+            prev.textContent += ' ';
+          }
+        } else if (prev && prev.nodeType === Node.ELEMENT_NODE) {
+          dest.appendChild(document.createTextNode(' '));
+        }
         dest.appendChild(a);
+        // Add space after link too
+        dest.appendChild(document.createTextNode(' '));
       } else {
         processNode(node, dest, baseUrl, target);
       }
@@ -1011,10 +1353,7 @@ function openInPanel(url) {
 function showPasteOverlay() {
   document.getElementById('paste-url-hint').textContent = sideCurrentUrl || 'Paste any page content';
   document.getElementById('paste-overlay').classList.add('show');
-  setTimeout(() => {
-    const z = document.getElementById('side-paste-zone');
-    if (z) z.focus();
-  }, 150);
+  switchPasteTab('side', 'paste');
 }
 
 function hidePasteOverlay() {
@@ -1157,6 +1496,41 @@ function setupKeyboard() {
     if ((e.ctrlKey||e.metaKey) && e.key==='w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId, null); }
     if ((e.ctrlKey||e.metaKey) && e.key==='l') { e.preventDefault(); document.getElementById('url-input').focus(); document.getElementById('url-input').select(); }
   });
+}
+
+// ── PASTE TAB SWITCHER ──
+function switchPasteTab(context, tab) {
+  const prefix = context === 'main' ? 'main' : 'side';
+  // Update tab buttons
+  document.getElementById(`${prefix}-tab-paste`).classList.toggle('active', tab === 'paste');
+  document.getElementById(`${prefix}-tab-html`).classList.toggle('active', tab === 'html');
+  // Update panels
+  document.getElementById(`${prefix}-panel-paste`).classList.toggle('active', tab === 'paste');
+  document.getElementById(`${prefix}-panel-html`).classList.toggle('active', tab === 'html');
+  // Focus appropriate element
+  setTimeout(() => {
+    if (tab === 'paste') {
+      const z = document.getElementById(`${prefix}-paste-zone`);
+      if (z) z.focus();
+    } else {
+      const t = document.getElementById(`${prefix}-html-textarea`);
+      if (t) t.focus();
+    }
+  }, 80);
+}
+
+function renderMainHtml() {
+  const raw = document.getElementById('main-html-textarea').value.trim();
+  if (!raw) { showStatus('Nothing to render — paste HTML source first'); return; }
+  const tab = tabs.find(t => t.id === activeTabId);
+  const url = (tab && tab.url) || location.href;
+  handlePastedHtml(raw, url, 'main');
+}
+
+function renderSideHtml() {
+  const raw = document.getElementById('side-html-textarea').value.trim();
+  if (!raw) { showStatus('Nothing to render — paste HTML source first'); return; }
+  handlePastedHtml(raw, sideCurrentUrl || location.href, 'side');
 }
 
 // ── BOOKMARKLET ──
